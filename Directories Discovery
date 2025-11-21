@@ -1,0 +1,318 @@
+# Complete Directory & File Discovery Commands - SecLists Optimized
+
+```bash
+# =============================================================================
+# FEROXBUSTER COMMANDS - SECLISTS OPTIMIZED
+# =============================================================================
+
+# Quick directory scan with common wordlist
+feroxbuster -u http://target.com -w /usr/share/seclists/Discovery/Web-Content/common.txt -t 100 -C 404,403
+
+# Comprehensive directory scan
+feroxbuster -u http://target.com -w /usr/share/seclists/Discovery/Web-Content/raft-large-directories.txt -t 100 -C 404 -o ferox_dirs.txt
+
+# File discovery with extensions
+feroxbuster -u http://target.com -w /usr/share/seclists/Discovery/Web-Content/raft-large-files.txt -x php,asp,aspx,jsp,html,js,txt,xml,json,bak,zip,tar,gz,sql,db,log,old,backup -t 100 -C 404
+
+# Recursive deep scan
+feroxbuster -u http://target.com -w /usr/share/seclists/Discovery/Web-Content/raft-medium-directories.txt -x php,html,txt,js,xml,json,bak -r -d 4 -t 100 -C 404,403 -o ferox_recursive.txt
+
+# Hidden files and directories
+feroxbuster -u http://target.com -w /usr/share/seclists/Discovery/Web-Content/raft-large-words.txt -x env,git,svn,htaccess,htpasswd,config,conf,ini,yml,yaml -t 100 -C 404
+
+# Admin panel discovery
+feroxbuster -u http://target.com -w /usr/share/seclists/Discovery/Web-Content/raft-large-directories.txt -w /usr/share/seclists/Discovery/Web-Content/Logins.fuzz.txt -t 100 -C 404
+
+# Backup file hunting
+feroxbuster -u http://target.com -w /usr/share/seclists/Discovery/Web-Content/raft-large-files.txt -x bak,backup,old,save,tmp,swp,~,orig,copy,conf,sql,zip,tar,gz,rar -t 100 -C 404
+
+# Technology-specific scans - Apache
+feroxbuster -u http://target.com -w /usr/share/seclists/Discovery/Web-Content/apache.txt -t 50 -C 404
+
+# Technology-specific scans - Nginx
+feroxbuster -u http://target.com -w /usr/share/seclists/Discovery/Web-Content/nginx.txt -t 50 -C 404
+
+# Technology-specific scans - IIS
+feroxbuster -u http://target.com -w /usr/share/seclists/Discovery/Web-Content/IIS.fuzz.txt -t 50 -C 404
+
+# WordPress discovery
+feroxbuster -u http://target.com -w /usr/share/seclists/Discovery/Web-Content/CMS/wordpress.fuzz.txt -t 100 -C 404
+
+# API endpoint discovery
+feroxbuster -u http://target.com/api -w /usr/share/seclists/Discovery/Web-Content/api/api-endpoints.txt -w /usr/share/seclists/Discovery/Web-Content/api/api-seen-in-wild.txt -t 100 -C 404
+
+# CGI/Scripts discovery
+feroxbuster -u http://target.com -w /usr/share/seclists/Discovery/Web-Content/CGIs.txt -t 50 -C 404
+
+# =============================================================================
+# DIRSEARCH COMMANDS - SECLISTS OPTIMIZED
+# =============================================================================
+
+# Quick scan with common paths
+dirsearch -u http://target.com -w /usr/share/seclists/Discovery/Web-Content/common.txt -t 100 -x 404,403
+
+# Comprehensive file and directory scan
+dirsearch -u http://target.com -w /usr/share/seclists/Discovery/Web-Content/raft-large-directories.txt -w /usr/share/seclists/Discovery/Web-Content/raft-large-files.txt -t 100 -x 404
+
+# Extension-based discovery
+dirsearch -u http://target.com -w /usr/share/seclists/Discovery/Web-Content/raft-medium-words.txt -e php,asp,aspx,jsp,html,js,txt,xml,json,bak,zip,sql,log,old,backup,config,conf -t 100 -x 404
+
+# Recursive scan with depth
+dirsearch -u http://target.com -w /usr/share/seclists/Discovery/Web-Content/raft-medium-directories.txt -e php,html,js,txt -r --max-recursion-depth=3 -t 100 -x 404
+
+# Backup and config file discovery
+dirsearch -u http://target.com -w /usr/share/seclists/Discovery/Web-Content/raft-large-files.txt -e bak,backup,old,save,tmp,swp,conf,config,ini,yaml,yml,env,sql,db -t 100 -x 404 -o dirsearch_backups.txt
+
+# Admin and login page discovery
+dirsearch -u http://target.com -w /usr/share/seclists/Discovery/Web-Content/Logins.fuzz.txt -e php,asp,aspx,jsp,html -t 50 -x 404
+
+# Apache-specific paths
+dirsearch -u http://target.com -w /usr/share/seclists/Discovery/Web-Content/apache.txt -t 50 -x 404
+
+# IIS-specific paths
+dirsearch -u http://target.com -w /usr/share/seclists/Discovery/Web-Content/IIS.fuzz.txt -e asp,aspx -t 50 -x 404
+
+# Spring Boot actuator endpoints
+dirsearch -u http://target.com -w /usr/share/seclists/Discovery/Web-Content/spring-boot.txt -t 50 -x 404
+
+# API discovery
+dirsearch -u http://target.com/api -w /usr/share/seclists/Discovery/Web-Content/api/api-endpoints.txt -w /usr/share/seclists/Discovery/Web-Content/api/objects.txt -t 100 -x 404
+
+# CMS detection - WordPress
+dirsearch -u http://target.com -w /usr/share/seclists/Discovery/Web-Content/CMS/wordpress.fuzz.txt -e php -t 100 -x 404
+
+# CMS detection - Joomla
+dirsearch -u http://target.com -w /usr/share/seclists/Discovery/Web-Content/CMS/joomla.fuzz.txt -e php -t 100 -x 404
+
+# CMS detection - Drupal
+dirsearch -u http://target.com -w /usr/share/seclists/Discovery/Web-Content/CMS/drupal.fuzz.txt -e php -t 100 -x 404
+
+# =============================================================================
+# FFUF COMMANDS - SECLISTS OPTIMIZED
+# =============================================================================
+
+# Quick directory enumeration
+ffuf -w /usr/share/seclists/Discovery/Web-Content/common.txt -u http://target.com/FUZZ -fc 404 -t 100 -ac
+
+# Comprehensive directory scan
+ffuf -w /usr/share/seclists/Discovery/Web-Content/raft-large-directories.txt -u http://target.com/FUZZ -fc 404 -mc 200,204,301,302,307,401,403 -t 100 -ac -o ffuf_dirs.json -of json
+
+# File discovery with multiple extensions
+ffuf -w /usr/share/seclists/Discovery/Web-Content/raft-large-files.txt -u http://target.com/FUZZ -e .php,.asp,.aspx,.jsp,.html,.js,.txt,.xml,.json,.bak,.zip,.tar,.gz,.sql,.db,.log,.old,.backup -fc 404 -t 100 -ac
+
+# Recursive directory scanning
+ffuf -w /usr/share/seclists/Discovery/Web-Content/raft-medium-directories.txt -u http://target.com/FUZZ -recursion -recursion-depth 3 -e .php,.html,.txt,.js -fc 404 -t 100 -ac -o ffuf_recursive.json -of json
+
+# Backup file hunting
+ffuf -w /usr/share/seclists/Discovery/Web-Content/raft-large-files.txt -w /usr/share/seclists/Discovery/Web-Content/raft-large-words.txt -u http://target.com/FUZZ.FUZ2Z -fc 404 -t 100
+
+# Hidden file discovery
+ffuf -w /usr/share/seclists/Discovery/Web-Content/raft-large-words.txt -u http://target.com/.FUZZ -fc 404 -e .env,.git,.svn,.htaccess,.htpasswd,.config,.conf,.ini,.yml,.yaml -t 100
+
+# Config file discovery
+ffuf -w /usr/share/seclists/Discovery/Web-Content/raft-medium-files.txt -u http://target.com/FUZZ -e .conf,.config,.ini,.env,.yaml,.yml,.xml,.properties,.json -fc 404 -t 100
+
+# Admin panel discovery
+ffuf -w /usr/share/seclists/Discovery/Web-Content/Logins.fuzz.txt -u http://target.com/FUZZ -fc 404 -mc 200,301,302,401,403 -t 50
+
+# Apache-specific discovery
+ffuf -w /usr/share/seclists/Discovery/Web-Content/apache.txt -u http://target.com/FUZZ -fc 404 -mc 200,301,302,403 -t 50
+
+# IIS-specific discovery
+ffuf -w /usr/share/seclists/Discovery/Web-Content/IIS.fuzz.txt -u http://target.com/FUZZ -fc 404 -e .asp,.aspx -t 50
+
+# API endpoint discovery
+ffuf -w /usr/share/seclists/Discovery/Web-Content/api/api-endpoints.txt -u http://target.com/api/FUZZ -fc 404 -mc 200,201,204,301,302,400,401,403,405 -t 100
+
+# API v1/v2/v3 discovery
+ffuf -w /usr/share/seclists/Discovery/Web-Content/api/api-endpoints.txt -w /usr/share/seclists/Discovery/Web-Content/api/api-endpoints-res.txt -u http://target.com/api/v1/FUZZ -fc 404 -t 100
+
+# GraphQL endpoint discovery
+ffuf -w /usr/share/seclists/Discovery/Web-Content/graphql.txt -u http://target.com/FUZZ -fc 404 -mc 200,400,500 -t 50
+
+# WordPress discovery
+ffuf -w /usr/share/seclists/Discovery/Web-Content/CMS/wordpress.fuzz.txt -u http://target.com/FUZZ -fc 404 -t 100
+
+# Joomla discovery
+ffuf -w /usr/share/seclists/Discovery/Web-Content/CMS/joomla.fuzz.txt -u http://target.com/FUZZ -fc 404 -t 100
+
+# Drupal discovery
+ffuf -w /usr/share/seclists/Discovery/Web-Content/CMS/drupal.fuzz.txt -u http://target.com/FUZZ -fc 404 -t 100
+
+# Spring Boot Actuator
+ffuf -w /usr/share/seclists/Discovery/Web-Content/spring-boot.txt -u http://target.com/FUZZ -fc 404 -mc 200,401,403 -t 50
+
+# Git repository discovery
+ffuf -w /usr/share/seclists/Discovery/Web-Content/raft-large-words.txt -u http://target.com/.git/FUZZ -fc 404 -mc 200,301,403 -t 50
+
+# SVN repository discovery
+ffuf -w /usr/share/seclists/Discovery/Web-Content/SVN-Dirs.txt -u http://target.com/.svn/FUZZ -fc 404 -mc 200,301,403 -t 50
+
+# Parameter discovery
+ffuf -w /usr/share/seclists/Discovery/Web-Content/burp-parameter-names.txt -u http://target.com/page?FUZZ=test -fc 404 -t 100
+
+# Virtual host discovery
+ffuf -w /usr/share/seclists/Discovery/DNS/subdomains-top1million-5000.txt -u http://target.com/ -H "Host: FUZZ.target.com" -fc 404 -t 100
+
+# =============================================================================
+# WFUZZ COMMANDS - SECLISTS OPTIMIZED
+# =============================================================================
+
+# Quick directory scan
+wfuzz -w /usr/share/seclists/Discovery/Web-Content/common.txt --hc 404 -t 100 http://target.com/FUZZ
+
+# Large directory enumeration
+wfuzz -w /usr/share/seclists/Discovery/Web-Content/raft-large-directories.txt --hc 404 --hc 403 -t 100 http://target.com/FUZZ
+
+# File discovery with extensions
+wfuzz -w /usr/share/seclists/Discovery/Web-Content/raft-large-files.txt -w extensions.txt --hc 404 -t 100 http://target.com/FUZZ.FUZ2Z
+
+# Backup file discovery
+wfuzz -w /usr/share/seclists/Discovery/Web-Content/raft-medium-files.txt -w backup_ext.txt --hc 404 -t 100 http://target.com/FUZZ.FUZ2Z
+
+# Hidden directory discovery
+wfuzz -w /usr/share/seclists/Discovery/Web-Content/raft-large-words.txt --hc 404 -t 100 http://target.com/.FUZZ
+
+# Admin panel discovery
+wfuzz -w /usr/share/seclists/Discovery/Web-Content/Logins.fuzz.txt --hc 404 --sc 200,301,302,401,403 -t 50 http://target.com/FUZZ
+
+# Apache path discovery
+wfuzz -w /usr/share/seclists/Discovery/Web-Content/apache.txt --hc 404 -t 50 http://target.com/FUZZ
+
+# IIS path discovery
+wfuzz -w /usr/share/seclists/Discovery/Web-Content/IIS.fuzz.txt --hc 404 -t 50 http://target.com/FUZZ
+
+# API endpoint discovery
+wfuzz -w /usr/share/seclists/Discovery/Web-Content/api/api-endpoints.txt --hc 404 -t 100 http://target.com/api/FUZZ
+
+# WordPress discovery
+wfuzz -w /usr/share/seclists/Discovery/Web-Content/CMS/wordpress.fuzz.txt --hc 404 -t 100 http://target.com/FUZZ
+
+# Parameter fuzzing
+wfuzz -w /usr/share/seclists/Discovery/Web-Content/burp-parameter-names.txt --hc 404 -t 100 http://target.com/page?FUZZ=test
+
+# Virtual host discovery
+wfuzz -w /usr/share/seclists/Discovery/DNS/subdomains-top1million-5000.txt -H "Host: FUZZ.target.com" --hc 404 -t 100 http://target_ip/
+
+# Multiple position fuzzing
+wfuzz -w /usr/share/seclists/Discovery/Web-Content/raft-medium-directories.txt -w /usr/share/seclists/Discovery/Web-Content/raft-medium-files.txt --hc 404 -t 100 http://target.com/FUZZ/FUZ2Z
+
+# =============================================================================
+# SPECIALIZED DISCOVERY SCENARIOS
+# =============================================================================
+
+# Complete web root enumeration (feroxbuster)
+feroxbuster -u http://target.com -w /usr/share/seclists/Discovery/Web-Content/raft-large-directories.txt -w /usr/share/seclists/Discovery/Web-Content/raft-large-files.txt -x php,asp,aspx,jsp,html,js,txt,xml,json,bak,zip,sql,db,log,old,backup,config,conf -r -d 4 -t 100 -C 404 -o complete_enum.txt
+
+# Git repository full extraction (ffuf)
+ffuf -w /usr/share/seclists/Discovery/Web-Content/raft-large-words.txt -u http://target.com/.git/FUZZ -fc 404 -mc 200,301,403 -t 50 -o git_discovery.txt
+
+# API comprehensive scan (dirsearch)
+dirsearch -u http://target.com/api -w /usr/share/seclists/Discovery/Web-Content/api/api-endpoints.txt -w /usr/share/seclists/Discovery/Web-Content/api/api-seen-in-wild.txt -w /usr/share/seclists/Discovery/Web-Content/api/objects.txt -e php,json,xml -t 100 -x 404
+
+# Technology stack detection (ffuf)
+ffuf -w /usr/share/seclists/Discovery/Web-Content/raft-large-words.txt -u http://target.com/FUZZ -e .php,.asp,.aspx,.jsp,.do,.action,.html,.js,.json -fc 404 -t 100 -ac
+
+# Sensitive file discovery (feroxbuster)
+feroxbuster -u http://target.com -w /usr/share/seclists/Discovery/Web-Content/raft-large-files.txt -x env,config,conf,ini,yaml,yml,xml,json,properties,sql,db,bak,backup,old,log,key,pem,crt,cer,p12,pfx -t 100 -C 404 -o sensitive_files.txt
+
+# Admin interface discovery (ffuf)
+ffuf -w /usr/share/seclists/Discovery/Web-Content/Logins.fuzz.txt -w /usr/share/seclists/Discovery/Web-Content/raft-large-directories.txt -u http://target.com/FUZZ -fc 404 -mc 200,301,302,401,403 -t 50 -o admin_discovery.txt
+
+# Database file discovery (dirsearch)
+dirsearch -u http://target.com -w /usr/share/seclists/Discovery/Web-Content/raft-large-files.txt -e sql,db,sqlite,sqlite3,mdb,accdb,bak,dump -t 50 -x 404 -o database_files.txt
+
+# Archive file discovery (ffuf)
+ffuf -w /usr/share/seclists/Discovery/Web-Content/raft-medium-files.txt -u http://target.com/FUZZ -e .zip,.tar,.gz,.rar,.7z,.bz2,.tgz,.tar.gz -fc 404 -t 100
+
+# =============================================================================
+# CMS-SPECIFIC COMPREHENSIVE SCANS
+# =============================================================================
+
+# WordPress full enumeration
+feroxbuster -u http://target.com -w /usr/share/seclists/Discovery/Web-Content/CMS/wordpress.fuzz.txt -x php -r -d 3 -t 100 -C 404 -o wordpress_enum.txt
+
+# Joomla full enumeration
+dirsearch -u http://target.com -w /usr/share/seclists/Discovery/Web-Content/CMS/joomla.fuzz.txt -e php -r -t 100 -x 404 -o joomla_enum.txt
+
+# Drupal full enumeration
+ffuf -w /usr/share/seclists/Discovery/Web-Content/CMS/drupal.fuzz.txt -u http://target.com/FUZZ -fc 404 -e .php -recursion -recursion-depth 2 -t 100 -o drupal_enum.json -of json
+
+# =============================================================================
+# CLOUD & MODERN APP DISCOVERY
+# =============================================================================
+
+# AWS S3 bucket discovery
+ffuf -w /usr/share/seclists/Discovery/Web-Content/raft-large-words.txt -u http://target.com/FUZZ -fc 404 -mr "s3.amazonaws.com" -t 100
+
+# Docker/Container paths
+ffuf -w /usr/share/seclists/Discovery/Web-Content/raft-medium-directories.txt -u http://target.com/FUZZ -fc 404 -mr "docker\|container" -t 50
+
+# Kubernetes endpoints
+dirsearch -u http://target.com -w /usr/share/seclists/Discovery/Web-Content/raft-medium-words.txt -e "" -t 50 -x 404 --suffixes=/api,/metrics,/health,/ready
+
+# Jenkins discovery
+ffuf -w /usr/share/seclists/Discovery/Web-Content/raft-large-directories.txt -u http://target.com/FUZZ -fc 404 -mr "Jenkins\|hudson" -t 50
+
+# =============================================================================
+# EXTENSION WORDLISTS FOR REFERENCE
+# =============================================================================
+
+# Create extensions.txt file with:
+echo -e "php\nasp\naspx\njsp\nhtml\nhtm\njs\njson\nxml\ntxt\npdf\nzip\ntar\ngz\nbak\nold\nbackup\nsql\ndb\nlog\nconf\nconfig\nini\nyaml\nyml" > extensions.txt
+
+# Create backup_ext.txt file with:
+echo -e "bak\nbackup\nold\norig\nsave\ncopy\ntmp\ntemp\n~\nswp\nswo\nbkp" > backup_ext.txt
+
+# =============================================================================
+# OPTIMAL SCANNING STRATEGY
+# =============================================================================
+
+# Phase 1: Quick discovery (5-10 minutes)
+feroxbuster -u http://target.com -w /usr/share/seclists/Discovery/Web-Content/common.txt -x php,html,txt,js -t 100 -C 404 -o phase1.txt
+
+# Phase 2: Medium scan (30-60 minutes)
+ffuf -w /usr/share/seclists/Discovery/Web-Content/raft-medium-directories.txt -w /usr/share/seclists/Discovery/Web-Content/raft-medium-files.txt -u http://target.com/FUZZ -e .php,.html,.js,.txt,.xml,.json,.bak -fc 404 -recursion -recursion-depth 2 -t 100 -ac -o phase2.json -of json
+
+# Phase 3: Deep scan (2-4 hours)
+feroxbuster -u http://target.com -w /usr/share/seclists/Discovery/Web-Content/raft-large-directories.txt -w /usr/share/seclists/Discovery/Web-Content/raft-large-files.txt -x php,asp,aspx,jsp,html,js,txt,xml,json,bak,zip,sql,db,log,old,backup,config,conf,ini,yaml,yml,env -r -d 5 -t 100 -C 404 -o phase3.txt
+
+# Phase 4: Specialized scan (based on findings)
+# Technology-specific, API, CMS, etc. based on what was found in previous phases
+
+# =============================================================================
+# PARALLEL SCANNING FOR FASTER RESULTS
+# =============================================================================
+
+# Run multiple scans simultaneously
+feroxbuster -u http://target.com -w /usr/share/seclists/Discovery/Web-Content/raft-large-directories.txt -t 100 -C 404 -o dirs.txt &
+ffuf -w /usr/share/seclists/Discovery/Web-Content/raft-large-files.txt -u http://target.com/FUZZ -e .php,.html,.js,.txt,.bak -fc 404 -t 100 -o files.json -of json &
+dirsearch -u http://target.com -w /usr/share/seclists/Discovery/Web-Content/api/api-endpoints.txt -t 100 -x 404 -o api.txt &
+wait
+
+# =============================================================================
+# OUTPUT ANALYSIS & FILTERING
+# =============================================================================
+
+# Filter feroxbuster results for specific status codes
+cat ferox_output.txt | grep "200\|301\|302\|403"
+
+# Extract only URLs from ffuf JSON output
+cat ffuf_output.json | jq -r '.results[].url'
+
+# Sort and unique URLs
+cat results.txt | sort -u > unique_results.txt
+
+# Filter by specific file extensions
+cat results.txt | grep -E "\.(php|asp|aspx|jsp|config|conf|bak)$"
+```
+
+**Best Practices:**
+1. Start with quick scans using common.txt
+2. Progress to medium wordlists if initial results are promising
+3. Use large wordlists only when necessary
+4. Always use recursive scanning for thorough coverage
+5. Adjust threads based on target server capacity
+6. Combine multiple tools for comprehensive coverage
+7. Save all output for later analysis
+8. Use auto-calibration (-ac in ffuf) to filter false positives
